@@ -1,42 +1,103 @@
-# [New Empty Python Project Base](https://github.com/Neuraxio/New-Empty-Python-Project-Base)
+# Introduction
+Gaze tracking and gesture recognition technologies have made significant advancements in recent years, with applications ranging from virtual and augmented reality, gaming, and human-computer interaction. This project aims to develop an application that leverages these technologies to allow users to interact with their devices using their gaze and gestures alone.
 
-> This is just what you need to start a new Python project.
+# Problem Statement
+Traditional input methods like keyboards, mice, and touchscreens have proven to be effective in daily use, but they may become challenging or even inaccessible in hands-free environments such as virtual and augmented reality. Additionally, not all users, including those with physical disabilities, can effectively use these traditional methods. As a result, there is a pressing need for alternative forms of interaction that are more intuitive, user-friendly, and accessible to a wider range of users, including those with disabilities and those looking for more convenient methods of input in immersive environments.
 
-Simply use this project template to start new python projects.
+# Target Users
+This project aims to serve individuals in need of more natural, user-friendly, and accessible methods of device interaction, particularly those with physical disabilities. Additionally, it caters to virtual and augmented reality users, and the gaming community seeking a hands-free experience.
 
-## Using this template for your project (how to)
+# Offered Solutions
+The application will leverage computer vision algorithms to estimate the user's gaze direction and recognize their facial gestures. The gaze tracking module will use a webcam to estimate the user's gaze direction on the screen, while the gesture capturing module will recognize facial gestures such as winking, eyebrow-raising, and lip-pursing. In the future, the gesture capturing module may be expanded to allow users to create custom gestures.
 
-You can now automatically create a new project based on this template by [clicking here on `Use this template`](https://github.com/Neuraxio/New-Empty-Python-Project-Base/generate), or by clicking on the button above in the repo, as depicted in the image below. If you don't use GitHub, you may as well simply clone this repository. 
+# Implementation
+The gaze tracking module will be implemented using a temporal dilated convolution neural network (TDCNN) trained on a dataset of face images and gaze coordinates. The gesture capturing module will be implemented using a similar neural network trained on a dataset of facial gestures. The application will be built using the MediaPipe and OpenCV libraries and will run on a standard desktop or laptop computer.
+## Gaze Tracking:
 
-[![](how_to_use_template.jpg)](https://github.com/Neuraxio/New-Empty-Python-Project-Base/generate)
+   * Utilize the mediapipe and cvzone python packages to detect the face mesh, including the irises.
+   * Gather and annotate a dataset of face images with the screen coordinates where the subject is looking.
+   * Train a deep learning neural network to predict the gaze location based on face mesh landmarks.
 
-## Adapting it for your own project
+##  Gesture Capturing:
 
-1. Rename the `project/` folder (and all references to this folder in other files) to customize your project name that is currently named `project` as per the folder's name. 
-2. You can run tests by running `pytest` in the root, or by running `python3 setup.py test`. Code coverage is enabled with pytest-cov.
-3. Edit the `setup.py` of your project to make it truly yours. Remove my email and info from here and put your own info. You may as well delete the full `setup.py` file instead of adapting it if you don't intend to publish your project on `pip` nor on `conda` as  a package. 
-4. Start coding in your now-renamed project folder and add some more tests under the `testing/` folder!
+   * Train a deep learning neural network model to classify the action or gesture.
+   * Define default gestures, including winking, eyebrow-raising, and single or double, left or right eyebrow raises.
+   * Implement a trigger gesture to activate the gesture recognition module.
+   * Consider adding a gesture-recording module in the future to support custom gestures using few-shot learning methods.
 
-### If building a package: Deploying your new package to PyPI
+## App Development:
 
-[Upload](https://packaging.python.org/tutorials/packaging-projects/) your project as a package on [PyPI](https://pypi.org/), the Python Package Index, to make it available on `pip`! (optional)
+  *  Integrate the gaze tracking and gesture capturing modules into a user-friendly application.
+  *  Design a paradigm where users can play a game using their gaze and gestures to collect data and improve model performance.
 
-To do that, read my short step by step guide on [How to deploy a new package (or version of package) to PyPI](https://github.com/Neuraxio/Neuraxle/wiki/How-to-deploy-a-new-package-(or-version-of-package)-to-PyPI). 
+# Unique Features:
 
-### If building a REST API app (e.g.: SaaS): Structuring your software architecture's layers
+* An open-source and low-cost solution for gaze tracking and gesture recognition.
+* Use of computer vision techniques to detect facial landmarks and iris locations.
+* Integration of a DL models for facial gesture recognition and gaze tracking.
+* Option to add custom gestures through a gesture-recording model using few-shot learning.
 
-I have recorded here my tips and tricks, what to look for, and how to structure your application for it to be clean in terms of software architecture: https://youtu.be/K4QN27IKr0g?t=1211
+# Skills and Requirements to Contribute to the Project:
 
-## Understanding how this template works
+   * Experience with computer vision, machine learning, and deep learning
+   * Proficiency in programming languages such as Python and C++
+   * Knowledge of face detection and recognition algorithms
+   * Familiarity with libraries such as MediaPipe, CVzone and Pytorch
+   * Ability to work with temporal (time series) data
+   * Good understanding of neural networks and training process
+   * Ability to work with large datasets and extract insights from data
+   * Familiarity with Git and GitHub
+   * Familiarity with agile development methodologies
+   * Understanding of ethical and privacy concerns in AI and computer vision
 
-The article [The optimal python project structure](https://awaywithideas.com/the-optimal-python-project-structure/?ref=gucci_neuraxio) by Luke Tonin does a good job at explaining how a template like the present one works. The present template is a bit more complete and complex than in the article, thought, as it already includes a test suite (including a starter test example), and a thorough `setup.py` file for your project to be properly packaged. 
+## For Junior Developers and Data Scientists:
 
-There is also my [video on software architecture](https://youtu.be/K4QN27IKr0g?t=1211) that can help, in which I do the overview of a full project based on this template, in terms of theoretical software architecture rather than practical how-to use the template. 
+   * Strong interest in learning and experience in computer vision and machine learning
+   * Willingness to work in a team and learn from senior developers
+   * Ability to communicate effectively and work well with others
+   * Ability to work with deadlines and prioritize tasks
+   * Good problem-solving skills
 
-## License
+## For Designers:
 
-[![CC0](http://mirrors.creativecommons.org/presskit/buttons/88x31/svg/cc-zero.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
+   * Strong skills in user interface (UI) and user experience (UX) design
+   * Understanding of the importance of accessibility and user-centered design
+   * Ability to create visually appealing designs that are easy to use
+   * Ability to work with developers to implement designs in code
+   * Familiarity with design tools such as Sketch and Figma
 
-To the extent possible under law, [Guillaume Chevalier](https://github.com/guillaume-chevalier) and [Neuraxio Inc.](https://github.com/Neuraxio) have waived all copyright and related or neighboring rights to this work.
+## For Project Managers:
 
-Citations that link to this repository will be appreciated, but are not required.
+   * Ability to lead a team of developers and other contributors
+   * Good organizational skills and attention to detail
+   * Ability to prioritize tasks and work with deadlines
+   * Ability to communicate effectively with team members and stakeholders
+   * Familiarity with agile development methodologies and project management tools such as JIRA and Trello.
+
+## For UI/UX Developers:
+
+   * Strong skills in front-end development
+   * Ability to create user-centered interfaces that are accessible and easy to use
+   * Familiarity with HTML, CSS, JavaScript, and React
+   * Ability to work with designers to implement designs in code
+   * Ability to test and debug code to ensure a smooth user experience.
+
+
+# Resources
+The project will require a webcam, a standard desktop or laptop computer, and access to the internet for downloading packages and datasets.
+
+# Privacy and Ethical Concerns
+The application will collect and process images of the user's face, which may raise privacy and ethical concerns. The project will comply with all applicable privacy laws and regulations, and all data collected will be securely stored and processed. The project will also provide users with clear and concise information about what data is being collected and how it is being used.
+
+# Workflow
+1. Gather data of face images and gaze coordinates for training the gaze tracking module.
+2. Design and train the gaze tracking module using the MediaPipe and OpenCV libraries.
+3. Gather data of facial gestures for training the gesture capturing module.
+4. Train the gesture capturing module using a similar neural network.
+5. Integrate the gaze tracking and gesture capturing modules into the application.
+6. Test the application and make improvements as needed.
+7. Release the application to the public and gather feedback.
+8. Continuously improve the application based on user feedback.
+
+# Future Development
+In the future, the project may expand to include additional input methods, such as voice commands, as well as additional output methods, such as haptic feedback.
