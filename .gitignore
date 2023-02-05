@@ -116,3 +116,6 @@ venv.bak/
 # Other
 ___*
 
+# assets
+assets/
+data/
