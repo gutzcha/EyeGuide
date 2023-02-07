@@ -42,12 +42,10 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    * Experience with computer vision, machine learning, and deep learning
    * Proficiency in programming languages such as Python and C++
    * Knowledge of face detection and recognition algorithms
-   * Familiarity with libraries such as MediaPipe, CVzone and Pytorch
+   * Familiarity with libraries such as MediaPipe, opencv and Pytorch
    * Ability to work with temporal (time series) data
    * Good understanding of neural networks and training process
-   * Ability to work with large datasets and extract insights from data
    * Familiarity with Git and GitHub
-   * Familiarity with agile development methodologies
    * Understanding of ethical and privacy concerns in AI and computer vision
 
 ## For Junior Developers and Data Scientists:
@@ -58,21 +56,12 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    * Ability to work with deadlines and prioritize tasks
    * Good problem-solving skills
 
-## For Designers:
-
-   * Strong skills in user interface (UI) and user experience (UX) design
-   * Understanding of the importance of accessibility and user-centered design
-   * Ability to create visually appealing designs that are easy to use
-   * Ability to work with developers to implement designs in code
-   * Familiarity with design tools such as Sketch and Figma
-
 ## For Project Managers:
 
    * Ability to lead a team of developers and other contributors
    * Good organizational skills and attention to detail
    * Ability to prioritize tasks and work with deadlines
    * Ability to communicate effectively with team members and stakeholders
-   * Familiarity with agile development methodologies and project management tools such as JIRA and Trello.
 
 ## For UI/UX Developers:
 
@@ -81,7 +70,6 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    * Familiarity with HTML, CSS, JavaScript, and React
    * Ability to work with designers to implement designs in code
    * Ability to test and debug code to ensure a smooth user experience.
-
 
 # Resources
 The project will require a webcam, a standard desktop or laptop computer, and access to the internet for downloading packages and datasets.
@@ -99,5 +87,30 @@ The application will collect and process images of the user's face, which may ra
 7. Release the application to the public and gather feedback.
 8. Continuously improve the application based on user feedback.
 
+# Open Tasks
+- [ ] **Create and train a model for gesture classification**
+  - [ ] Generate training data
+    - [x] Gather data of face videos for unsupervised model pretraining
+    - [ ] Build pipeline to extract and process pose data from face videos
+  - [ ] Create a masked autoencoder (MAE) model
+  - [ ] Create a training and validation pipeline and pretrain the model
+  - [ ] Finetune the model on simple facial gestures
+    - [ ] Gather facial gesture videos
+    - [ ] Train the model
+- [ ] **Create and train a model for eye tracking and gaze estimation**
+  - [ ] Generate training data
+    - [ ] Gather images of faces and coordinates of where they are looking at on the screen
+    - [ ] Build pipeline to extract and process data
+  - [ ] Create a model (TDCNN?)
+  - [ ] Create a training and validation pipeline and pretrain the model
+
 # Future Development
 In the future, the project may expand to include additional input methods, such as voice commands, as well as additional output methods, such as haptic feedback.
+
+# About the Author
+I am a Ph.D. candidate in Neuroscience at the University of Haifa, focusing on utilizing computer vision and deep learning to analyze animal social behaviors. I recently concluded a successful one-year internship at Amazon Lab 126, where I developed my programming, research, and deep learning skills. I am passionate about using technology for the betterment of society. I am eager to bring my knowledge and experience in computer vision and deep learning to this.
+Ways to contact me:
+LinkedIn: https://www.linkedin.com/in/goussha/
+Email: gutzcha@gmail.com
+Git: https://github.com/gutzcha
+
