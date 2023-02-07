@@ -27,8 +27,12 @@ class MediapipeVideoObj():
     def init_cv(self):
         self.cv = cv2.VideoCapture(self.video_path)
 
-    def draw_mini_face(self, face_landmarks, img):
+    def draw_mini_face(self, img, face_landmarks):
+        if not face_landmarks:
+            return []
 
+        draw_flag = self.draw_mini_face_flag
+        normalized_results = []
         width = self.img_width
         height = self.img_height
 
@@ -48,47 +52,55 @@ class MediapipeVideoObj():
         start_point = (int(offset_x), int(offset_y))
         end_point = (int(width * mini_win_scale + offset_x), int(height * mini_win_scale + offset_y))
 
-        cv2.rectangle(img, start_point, end_point, (250, 250, 250), -1)
         for lx, ly in zip(all_landmarks_x, all_landmarks_y):
-            lx = int((lx - min_x) / diff_x * width * mini_win_scale + offset_x)
-            ly = int((ly - min_y) / diff_y * height * mini_win_scale + offset_y)
+            lx_norm = (lx - min_x) / diff_x
+            ly_norm = (ly - min_y) / diff_y
+            normalized_results.append((lx_norm, ly_norm))
 
-            cv2.circle(img, (lx, ly), 1, (255, 0, 255), -1)
+            # scale the mini face and move it from the edge before drawing
+        if draw_flag:
+            cv2.rectangle(img, start_point, end_point, (250, 250, 250), -1)
+            for (lx_norm, ly_norm) in normalized_results:
+                lx_plot = int(lx_norm * width * mini_win_scale + offset_x)
+                ly_plot = int(ly_norm * height * mini_win_scale + offset_y)
+                cv2.circle(img, (lx_plot, ly_plot), 1, (255, 0, 255), -1)
 
-    def draw_face_landmarks(self, image):
+        return normalized_results
+
+    def draw_face_landmarks(self, image, face_landmarks):
 
         # Draw the face mesh annotations on the image.
         image.flags.writeable = True
 
         mp_face_mesh = self.mp_face_mesh
         mp_drawing_styles = self.mp_drawing_styles
-        results = self.results['results']
-        if results and results.multi_face_landmarks:
 
-            for face_landmarks in results.multi_face_landmarks:
-                self.mp_drawing.draw_landmarks(
-                    image=image,
-                    landmark_list=face_landmarks,
-                    connections=mp_face_mesh.FACEMESH_TESSELATION,
-                    landmark_drawing_spec=None,
-                    connection_drawing_spec=mp_drawing_styles
-                        .get_default_face_mesh_tesselation_style())
+        if face_landmarks:
 
-                self.mp_drawing.draw_landmarks(
-                    image=image,
-                    landmark_list=face_landmarks,
-                    connections=mp_face_mesh.FACEMESH_CONTOURS,
-                    landmark_drawing_spec=None,
-                    connection_drawing_spec=mp_drawing_styles
-                        .get_default_face_mesh_contours_style())
 
-                self.mp_drawing.draw_landmarks(
-                    image=image,
-                    landmark_list=face_landmarks,
-                    connections=mp_face_mesh.FACEMESH_IRISES,
-                    landmark_drawing_spec=None,
-                    connection_drawing_spec=mp_drawing_styles
-                        .get_default_face_mesh_iris_connections_style())
+            self.mp_drawing.draw_landmarks(
+                image=image,
+                landmark_list=face_landmarks,
+                connections=mp_face_mesh.FACEMESH_TESSELATION,
+                landmark_drawing_spec=None,
+                connection_drawing_spec=mp_drawing_styles
+                    .get_default_face_mesh_tesselation_style())
+
+            self.mp_drawing.draw_landmarks(
+                image=image,
+                landmark_list=face_landmarks,
+                connections=mp_face_mesh.FACEMESH_CONTOURS,
+                landmark_drawing_spec=None,
+                connection_drawing_spec=mp_drawing_styles
+                    .get_default_face_mesh_contours_style())
+
+            self.mp_drawing.draw_landmarks(
+                image=image,
+                landmark_list=face_landmarks,
+                connections=mp_face_mesh.FACEMESH_IRISES,
+                landmark_drawing_spec=None,
+                connection_drawing_spec=mp_drawing_styles
+                    .get_default_face_mesh_iris_connections_style())
 
     def process(self):
         cap = self.cv
@@ -120,18 +132,13 @@ class MediapipeVideoObj():
                 else:
                     face_landmarks = None
 
-                if face_landmarks:
 
-                    if self.draw_video_flag:
-                        if self.draw_mini_face_flag:
-                            self.draw_mini_face(face_landmarks, self.image)
-
-                        if self.draw_landmarks_flag:
-                            self.draw_face_landmarks(self.image)
+                normalized_face = self.draw_mini_face(self.image, face_landmarks)
+                self.draw_face_landmarks(self.image, face_landmarks)
 
                 self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
 
-                self.results += [{'id': frame_ind, 'image':self.image, 'results': temp_results }]
+                self.results += [{'id': frame_ind, 'image':self.image, 'results': temp_results, 'normalized_face': normalized_face}]
 
                 cv2.imshow('MediaPipe Face Mesh', self.image)
                 key = cv2.waitKey(1)

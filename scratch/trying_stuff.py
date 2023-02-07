@@ -1,8 +1,8 @@
 from utils.mediapipe_utils import MediapipeVideoObj
 import os.path as osp
 
-root_folder = 'C:\\Users\\user\\EyeGuide\\data'
-video_path = '300VW_Dataset_2015_12_14\\300VW_Dataset_2015_12_14\\001\\vid.avi'
+root_folder = 'C:\\Users\\user\\EyeGuide\\samples'
+video_path = 'vid.avi'
 full_path = osp.join(root_folder, video_path)
 
 config = {
