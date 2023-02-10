@@ -103,8 +103,9 @@ In the future, the project may expand to include additional input methods, such 
 
 # About the Author
 I am a Ph.D. candidate in Neuroscience at the University of Haifa, focusing on utilizing computer vision and deep learning to analyze animal social behaviors. I recently concluded a successful one-year internship at Amazon Lab 126, where I developed my programming, research, and deep learning skills. I am passionate about using technology for the betterment of society. I am eager to bring my knowledge and experience in computer vision and deep learning to this.
-Ways to contact me:
-LinkedIn: https://www.linkedin.com/in/goussha/
-Email: gutzcha@gmail.com
-Git: https://github.com/gutzcha
+
+Ways to contact:
+* LinkedIn: https://www.linkedin.com/in/goussha/
+* Email: gutzcha@gmail.com
+* Git: https://github.com/gutzcha
 
