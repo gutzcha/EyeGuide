@@ -38,31 +38,16 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
 * Option to add custom gestures through a gesture-recording model using few-shot learning.
 
 # Skills and Requirements to Contribute to the Project:
-
-   * Experience with computer vision, machine learning, and deep learning
-   * Proficiency in programming languages such as Python and C++
-   * Knowledge of face detection and recognition algorithms
-   * Familiarity with libraries such as MediaPipe, opencv and Pytorch
-   * Ability to work with temporal (time series) data
-   * Good understanding of neural networks and training process
-   * Familiarity with Git and GitHub
-   * Understanding of ethical and privacy concerns in AI and computer vision
-
 ## For Junior Developers and Data Scientists:
 
-   * Strong interest in learning and experience in computer vision and machine learning
-   * Willingness to work in a team and learn from senior developers
-   * Ability to communicate effectively and work well with others
-   * Ability to work with deadlines and prioritize tasks
-   * Good problem-solving skills
-
-## For Project Managers:
-
-   * Ability to lead a team of developers and other contributors
-   * Good organizational skills and attention to detail
-   * Ability to prioritize tasks and work with deadlines
-   * Ability to communicate effectively with team members and stakeholders
-
+   * Proficiency in Python programming
+   * Experience with computer vision, and deep learning   
+   * Good understanding of neural networks and training process
+   * Familiarity with Git and GitHub
+   * Knowledge of face detection and recognition algorithms - advantage
+   * Familiarity with libraries such as MediaPipe, opencv and Pytorch - advantage
+   * Ability to work with temporal (time series) data - advantage   
+   
 ## For UI/UX Developers:
 
    * Strong skills in front-end development
@@ -72,7 +57,14 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    * Ability to test and debug code to ensure a smooth user experience.
 
 # Resources
-The project will require a webcam, a standard desktop or laptop computer, and access to the internet for downloading packages and datasets.
+## Developments:
+  * Workstation to train the models
+  * Datasets for training
+## Usage: 
+  * A webcam
+  * A standard desktop or laptop computer
+  * Access to the internet for downloading packages and datasets.
+
 
 # Privacy and Ethical Concerns
 The application will collect and process images of the user's face, which may raise privacy and ethical concerns. The project will comply with all applicable privacy laws and regulations, and all data collected will be securely stored and processed. The project will also provide users with clear and concise information about what data is being collected and how it is being used.
