@@ -91,9 +91,11 @@ The application will collect and process images of the user's face, which may ra
 - [ ] **Create and train a model for gesture classification**
   - [ ] Generate training data
     - [x] Gather data of face videos for unsupervised model pretraining
-    - [ ] Build pipeline to extract and process pose data from face videos
+    - [x] Build pipeline to extract and process pose data from face videos
   - [ ] Create a masked autoencoder (MAE) model
   - [ ] Create a training and validation pipeline and pretrain the model
+    - [ ] Create dataset and dataloader classes
+    - [ ] Create trasformation classes including masking
   - [ ] Finetune the model on simple facial gestures
     - [ ] Gather facial gesture videos
     - [ ] Train the model
