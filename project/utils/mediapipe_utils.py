@@ -2,30 +2,42 @@ import cv2
 import mediapipe as mp
 
 
-class MediapipeVideoObj():
-    def __init__(self, config):
-        self.img_width = config['img_width']
-        self.img_height = config['img_height']
-        self.outputs_width = config['output_width']
-        self.outputs_height = config['output_height']
-        self.video_path = config['video_path']
 
+
+
+class MediapipeVideoExtractor:
+    def __init__(self, config_all,  debug=False):
+
+        self.debug = debug
+
+        # set video properties
+        config_video = config_all['config_video']
+        self.img_width = config_video['img_width']
+        self.img_height = config_video['img_height']
+        self.outputs_width = config_video['output_width']
+        self.outputs_height = config_video['output_height']
+        self.video_path = config_video['video_path']
+
+        # set display options
+        config_display = config_all['config_display']
+        self.draw_landmarks_flag = config_display['draw_landmarks_flag']
+        self.draw_mini_face_flag = config_display['draw_mini_face_flag']
+        self.draw_video_flag = config_display['draw_video_flag']
+
+        # init mediapipe and opencv objects
         self.mp_face_mesh = mp.solutions.face_mesh
         self.mp_drawing_styles = mp.solutions.drawing_styles
         self.mp_drawing = mp.solutions.drawing_utils
-        self.image = None
-        self.draw_landmarks_flag = True
-        self.draw_mini_face_flag = True
-        self.draw_video_flag = True
+        self.cv, self.fps = self.init_cv()
 
+        # init results
+        self.image = None
         self.results = []
 
-
-
-        self.init_cv()
-
     def init_cv(self):
-        self.cv = cv2.VideoCapture(self.video_path)
+        cap = cv2.VideoCapture(self.video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        return cap, fps
 
     def draw_mini_face(self, img, face_landmarks):
         if not face_landmarks:
@@ -37,9 +49,6 @@ class MediapipeVideoObj():
         height = self.img_height
 
         mini_win_scale = 0.2
-
-        normalized_width = 1
-        normalized_height = 1
 
         offset_x = 0.01 * width
         offset_y = 0.1 * height
@@ -76,8 +85,6 @@ class MediapipeVideoObj():
         mp_drawing_styles = self.mp_drawing_styles
 
         if face_landmarks:
-
-
             self.mp_drawing.draw_landmarks(
                 image=image,
                 landmark_list=face_landmarks,
@@ -102,8 +109,14 @@ class MediapipeVideoObj():
                 connection_drawing_spec=mp_drawing_styles
                     .get_default_face_mesh_iris_connections_style())
 
+    def get_raw_face_landmarks(self,face_landmarks):
+        all_landmarks_x = [int(l.x*self.img_width) for l in face_landmarks.landmark]
+        all_landmarks_y = [int(l.y*self.img_height) for l in face_landmarks.landmark]
+        return [(x, y) for x, y in zip(all_landmarks_x, all_landmarks_y)]
     def process(self):
         cap = self.cv
+        fps = self.fps
+
         img_width, img_height = self.img_width, self.img_height
         frame_ind = 0
         with self.mp_face_mesh.FaceMesh(
@@ -124,25 +137,42 @@ class MediapipeVideoObj():
                 image = cv2.resize(image, (img_width, img_height))
                 image.flags.writeable = False
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                self.image = image
 
-                temp_results = face_mesh.process(self.image)
+
+                temp_results = face_mesh.process(image)
                 if temp_results:
                     face_landmarks = temp_results.multi_face_landmarks[0]
                 else:
                     face_landmarks = None
 
 
-                normalized_face = self.draw_mini_face(self.image, face_landmarks)
-                self.draw_face_landmarks(self.image, face_landmarks)
+                timestamp = (cap.get(cv2.CAP_PROP_POS_MSEC))
 
-                self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+                if self.debug:
 
-                self.results += [{'id': frame_ind, 'image':self.image, 'results': temp_results, 'normalized_face': normalized_face}]
+                    self.image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                    normalized_face = self.draw_mini_face(self.image, face_landmarks)
+                    self.draw_face_landmarks(self.image, face_landmarks)
 
-                cv2.imshow('MediaPipe Face Mesh', self.image)
-                key = cv2.waitKey(1)
-                if key == ord('q'):
-                    break
+                    cv2.imshow('MediaPipe Face Mesh', self.image)
+                    key = cv2.waitKey(1)
+                    if key == ord('q'):
+                        break
+
+                    self.results += [
+                        {'id': frame_ind,
+                         # 'image': self.image.tolist(),
+                         'image': self.image,
+                         'results': self.get_raw_face_landmarks(face_landmarks),
+                         'normalized_face': normalized_face,
+                         'timestamps': timestamp}]
+                else:
+                    self.results += [
+                        {'id': frame_ind,
+                         'results': self.get_raw_face_landmarks(face_landmarks),
+                         'timestamps': timestamp}]
+
+
                 frame_ind += 1
         cap.release()
+        return self.results

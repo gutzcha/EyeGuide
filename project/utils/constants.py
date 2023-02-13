@@ -11,7 +11,9 @@ eye_keypoints = {
     470: 'right_eye_top',
     471: 'right_eye_right',
     472: 'right_eye_bottom',
-    474: 'left_eye_center',
+
+    473: 'left_eye_center',
+    474: 'left_eye_left',
     475: 'left_eye_top',
     476: 'left_eye_right',
     477: 'left_eye_bottom'
