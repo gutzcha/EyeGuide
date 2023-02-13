@@ -38,42 +38,16 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
 * Option to add custom gestures through a gesture-recording model using few-shot learning.
 
 # Skills and Requirements to Contribute to the Project:
-
-   * Experience with computer vision, machine learning, and deep learning
-   * Proficiency in programming languages such as Python and C++
-   * Knowledge of face detection and recognition algorithms
-   * Familiarity with libraries such as MediaPipe, CVzone and Pytorch
-   * Ability to work with temporal (time series) data
-   * Good understanding of neural networks and training process
-   * Ability to work with large datasets and extract insights from data
-   * Familiarity with Git and GitHub
-   * Familiarity with agile development methodologies
-   * Understanding of ethical and privacy concerns in AI and computer vision
-
 ## For Junior Developers and Data Scientists:
 
-   * Strong interest in learning and experience in computer vision and machine learning
-   * Willingness to work in a team and learn from senior developers
-   * Ability to communicate effectively and work well with others
-   * Ability to work with deadlines and prioritize tasks
-   * Good problem-solving skills
-
-## For Designers:
-
-   * Strong skills in user interface (UI) and user experience (UX) design
-   * Understanding of the importance of accessibility and user-centered design
-   * Ability to create visually appealing designs that are easy to use
-   * Ability to work with developers to implement designs in code
-   * Familiarity with design tools such as Sketch and Figma
-
-## For Project Managers:
-
-   * Ability to lead a team of developers and other contributors
-   * Good organizational skills and attention to detail
-   * Ability to prioritize tasks and work with deadlines
-   * Ability to communicate effectively with team members and stakeholders
-   * Familiarity with agile development methodologies and project management tools such as JIRA and Trello.
-
+   * Proficiency in Python programming
+   * Experience with computer vision, and deep learning   
+   * Good understanding of neural networks and training process
+   * Familiarity with Git and GitHub
+   * Knowledge of face detection and recognition algorithms - advantage
+   * Familiarity with libraries such as MediaPipe, opencv and Pytorch - advantage
+   * Ability to work with temporal (time series) data - advantage   
+   
 ## For UI/UX Developers:
 
    * Strong skills in front-end development
@@ -82,9 +56,15 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    * Ability to work with designers to implement designs in code
    * Ability to test and debug code to ensure a smooth user experience.
 
-
 # Resources
-The project will require a webcam, a standard desktop or laptop computer, and access to the internet for downloading packages and datasets.
+## Developments:
+  * Workstation to train the models
+  * Datasets for training
+## Usage: 
+  * A webcam
+  * A standard desktop or laptop computer
+  * Access to the internet for downloading packages and datasets.
+
 
 # Privacy and Ethical Concerns
 The application will collect and process images of the user's face, which may raise privacy and ethical concerns. The project will comply with all applicable privacy laws and regulations, and all data collected will be securely stored and processed. The project will also provide users with clear and concise information about what data is being collected and how it is being used.
@@ -99,5 +79,33 @@ The application will collect and process images of the user's face, which may ra
 7. Release the application to the public and gather feedback.
 8. Continuously improve the application based on user feedback.
 
+# Open Tasks
+- [ ] **Create and train a model for gesture classification**
+  - [ ] Generate training data
+    - [x] Gather data of face videos for unsupervised model pretraining
+    - [x] Build pipeline to extract and process pose data from face videos
+  - [ ] Create a masked autoencoder (MAE) model
+  - [ ] Create a training and validation pipeline and pretrain the model
+    - [ ] Create dataset and dataloader classes
+    - [ ] Create trasformation classes including masking
+  - [ ] Finetune the model on simple facial gestures
+    - [ ] Gather facial gesture videos
+    - [ ] Train the model
+- [ ] **Create and train a model for eye tracking and gaze estimation**
+  - [ ] Generate training data
+    - [ ] Gather images of faces and coordinates of where they are looking at on the screen
+    - [ ] Build pipeline to extract and process data
+  - [ ] Create a model (TDCNN?)
+  - [ ] Create a training and validation pipeline and pretrain the model
+
 # Future Development
 In the future, the project may expand to include additional input methods, such as voice commands, as well as additional output methods, such as haptic feedback.
+
+# About the Author
+I am a Ph.D. candidate in Neuroscience at the University of Haifa, focusing on utilizing computer vision and deep learning to analyze animal social behaviors. I recently concluded a successful one-year internship at Amazon Lab 126, where I developed my programming, research, and deep learning skills. I am passionate about using technology for the betterment of society. I am eager to bring my knowledge and experience in computer vision and deep learning to this.
+
+Ways to contact:
+* LinkedIn: https://www.linkedin.com/in/goussha/
+* Email: gutzcha@gmail.com
+* Git: https://github.com/gutzcha
+
