@@ -82,6 +82,11 @@ def draw_mini_face(face_landmarks, img):
 
     all_landmarks_x = [l.x for l in face_landmarks.landmark]
     all_landmarks_y = [l.y for l in face_landmarks.landmark]
+    all_landmarks_z = [l.z for l in face_landmarks.landmark]
+
+    for i, (x,y,z) in enumerate(zip(all_landmarks_x,all_landmarks_y,all_landmarks_z)):
+        print(f'{i}:{(x,y,z)}')
+
     min_x, max_x, diff_x = min(all_landmarks_x), max(all_landmarks_x), max(all_landmarks_x) - min(all_landmarks_x)
     min_y, max_y, diff_y = min(all_landmarks_y), max(all_landmarks_y), max(all_landmarks_y) - min(all_landmarks_y)
 
@@ -142,7 +147,8 @@ def draw_mini_face(face_landmarks, img):
 root_folder = 'C:\\Users\\user\\EyeGuide\\data'
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 video_path = '300VW_Dataset_2015_12_14\\300VW_Dataset_2015_12_14\\001\\vid.avi'
-cap = cv2.VideoCapture(osp.join(root_folder, video_path))
+# cap = cv2.VideoCapture(osp.join(root_folder, video_path))
+cap = cv2.VideoCapture(0)
 
 # q - quit
 # w - blink left

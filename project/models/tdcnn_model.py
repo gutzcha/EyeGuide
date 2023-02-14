@@ -45,11 +45,6 @@ class TDCNN(nn.Module):
         for bn in self.bn_layers:
             bn.momentum = momentum
 
-    def receptive_field(self):
-        frames = 0
-        for f in self.pad:
-            frames += f
-        return 1 + 2 * frames
 
     def forward(self, x):
         x = x.type(torch.float32)
@@ -65,3 +60,22 @@ class TDCNN(nn.Module):
             x = res + self.dropout(self.relu(self.bn_layers[2 * i + 1](self.conv_layers[2 * i + 1](x))))
 
         return x
+
+# class PatchEmbed(nn.Module):
+#     """
+#     Embed patches using tdcnn
+#     """
+#     def __len__(self, n_landmarks, in_chans, conv_layers, embed_dim):
+#
+
+if __name__ == '__main__':
+    n_frames = 32
+    n_landmarks = 478
+    dims = 2
+    test_input = torch.rand(1,n_frames,n_landmarks*dims)
+    filter_widths = [3, 3, 3, 3]
+    dropout = 0.25
+    channels = 64
+    model = TDCNN(filter_widths=filter_widths, num_features=n_landmarks,channels=channels)
+    ret = model(test_input)
+    print(ret)
