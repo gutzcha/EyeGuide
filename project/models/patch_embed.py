@@ -1,4 +1,7 @@
-# Code from https://raw.githubusercontent.com/facebookresearch/VideoPose3D/1afb1ca0f1237776518469876342fc8669d3f6a9/common/model.py
+'''
+Code from https://raw.githubusercontent.com/facebookresearch/VideoPose3D/1afb1ca0f1237776518469876342fc8669d3f6a9/common/model.py
+I added options to change number of out frames, and out dim
+'''
 #
 import torch
 import torch.nn as nn
@@ -10,7 +13,7 @@ class TemporalModelBase(nn.Module):
     """
 
     def __init__(self, num_joints_in, in_features, num_joints_out,
-                 filter_widths, causal, dropout, channels, out_dim,out_frames):
+                 filter_widths, causal, dropout, channels, out_dim):
         super().__init__()
 
         # Validate input
@@ -22,14 +25,14 @@ class TemporalModelBase(nn.Module):
         self.num_joints_out = num_joints_out
         self.filter_widths = filter_widths
         self.out_dim = out_dim
-        self.out_frames = out_frames
         self.drop = nn.Dropout(dropout)
         self.relu = nn.ReLU(inplace=True)
 
         self.pad = [filter_widths[0] // 2]
         self.expand_bn = nn.BatchNorm1d(channels, momentum=0.1)
         self.shrink = nn.Conv1d(channels, num_joints_out * out_dim, 1)
-        # self.shirnk_2 = nn.Conv1d(channels, )
+        # self.conv_out = nn.Conv2d(channels, )
+
     def set_bn_momentum(self, momentum):
         self.expand_bn.momentum = momentum
         for bn in self.layers_bn:
@@ -67,10 +70,10 @@ class TemporalModelBase(nn.Module):
         x = x.permute(0, 2, 1)
 
         x = self._forward_blocks(x)
-
+        # print(x.shape)
         x = x.permute(0, 2, 1)
         x = x.view(sz[0], -1, self.num_joints_out, self.out_dim)
-        # x = x.mean(dim=1)
+        x = x.mean(dim=1)
         return x
 
 
@@ -81,7 +84,7 @@ class TemporalModel(TemporalModelBase):
     """
 
     def __init__(self, num_joints_in, in_features, num_joints_out,
-                 filter_widths, causal=False, dropout=0.25, channels=1024, dense=False, out_dim=32,out_frames=1):
+                 filter_widths, causal=False, dropout=0.25, channels=1024, dense=False, out_dim=32):
         """
         Initialize this model.
 
@@ -96,7 +99,7 @@ class TemporalModel(TemporalModelBase):
         dense -- use regular dense convolutions instead of dilated convolutions (ablation experiment)
         """
         super().__init__(num_joints_in, in_features, num_joints_out, filter_widths, causal, dropout,
-                         channels,out_dim,out_frames)
+                         channels, out_dim)
 
         self.expand_conv = nn.Conv1d(num_joints_in * in_features, channels, filter_widths[0], bias=False)
 
@@ -149,7 +152,7 @@ class TemporalModelOptimized1f(TemporalModelBase):
     """
 
     def __init__(self, num_joints_in, in_features, num_joints_out,
-                 filter_widths, causal=False, dropout=0.25, channels=1024):
+                 filter_widths, causal=False, dropout=0.25, channels=1024, out_dim=32):
         """
         Initialize this model.
 
@@ -162,7 +165,7 @@ class TemporalModelOptimized1f(TemporalModelBase):
         dropout -- dropout probability
         channels -- number of convolution channels
         """
-        super().__init__(num_joints_in, in_features, num_joints_out, filter_widths, causal, dropout, channels)
+        super().__init__(num_joints_in, in_features, num_joints_out, filter_widths, causal, dropout, channels, out_dim)
 
         self.expand_conv = nn.Conv1d(num_joints_in * in_features, channels, filter_widths[0], stride=filter_widths[0],
                                      bias=False)
@@ -199,18 +202,59 @@ class TemporalModelOptimized1f(TemporalModelBase):
 
 
 
+
+class PatchEmbed(nn.Module):
+    def __init__(self, img_size, in_chans, embed_dim, channels=64, filter_widths=None):
+        super().__init__()
+        self.img_size = img_size
+
+        self.in_chans = in_chans
+        self.embed_dim = embed_dim
+        self.embed_channles = channels
+        if filter_widths is None:
+            self.filter_widths = [3, 3, 3]
+        else:
+            self.filter_widths = filter_widths
+
+        self.n_frames, self.n_landmarks = img_size
+
+        self.tdcnn_model = TemporalModelOptimized1f(self.n_landmarks, in_features=self.in_chans,
+                                                    num_joints_out=self.n_landmarks,
+                                                    filter_widths=self.filter_widths, causal=False, dropout=0.25,
+                                                    channels=self.embed_channles,
+                                                    out_dim=self.embed_dim)
+
+    def forward(self, x):
+        return self.tdcnn_model(x)
+
+
 if __name__ == '__main__':
-    n_frames = 32*2
+    n_frames = 32 * 2
     n_landmarks = 478
     dims = 2
-    test_input = torch.rand(1,n_frames, n_landmarks, dims)
+    test_input = torch.rand(1, n_frames, n_landmarks, dims)
     filter_widths = [3, 3, 3]
     dropout = 0.25
     channels = 64
     out_dim = 32
     out_frames = 1
-    model = TemporalModel(num_joints_in=n_landmarks, in_features=2, num_joints_out=n_landmarks,
-                 filter_widths=filter_widths, causal=False, dropout=0.25, channels=channels, dense=False,
-                          out_dim=out_dim, out_frames=out_frames)
+    # model = TemporalModel(num_joints_in=n_landmarks, in_features=2, num_joints_out=n_landmarks,
+    #              filter_widths=filter_widths, causal=False, dropout=0.25, channels=channels, dense=False,
+    #                       out_dim=out_dim)
+
+    model = TemporalModelOptimized1f(num_joints_in=n_landmarks, in_features=2, num_joints_out=n_landmarks,
+                                     filter_widths=filter_widths, causal=False, dropout=0.25, channels=channels,
+                                     out_dim=out_dim)
+
     ret = model(test_input)
-    print(ret.shape)
+    # print(ret.shape)
+    # print(ret)
+
+    ####
+    img_size = (n_frames, n_landmarks)
+    in_chans = dims
+    embed_dim = out_dim
+    model = PatchEmbed(img_size, in_chans, embed_dim, channels=128, filter_widths=[3, 3, 3])
+    x = model(test_input)
+    print(test_input.shape)
+    print(x.shape)
