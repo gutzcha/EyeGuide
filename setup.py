@@ -36,7 +36,7 @@ setup(
     tests_require=["pytest", "pytest-cov"],
     install_requires=[_requirements],
     include_package_data=True,
-    license='mit',
+    license='Apache-2.0 license',
     keywords='gaze, action classification, facial gestures, eye tracking'
 )
 

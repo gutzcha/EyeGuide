@@ -53,6 +53,7 @@ class MaskedAutoencoderTDCNN(nn.Module):
 
         # initialize patch_embed like nn.Linear (instead of nn.Conv2d)
         # w = self.patch_embed.tdcnn_model.weight.data
+
         w = self.pos_embed.data
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
 
