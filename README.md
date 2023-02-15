@@ -1,6 +1,9 @@
 # Introduction
 Gaze tracking and gesture recognition technologies have made significant advancements in recent years, with applications ranging from virtual and augmented reality, gaming, and human-computer interaction. This project aims to develop an application that leverages these technologies to allow users to interact with their devices using their gaze and gestures alone.
 
+![logo (2)](https://user-images.githubusercontent.com/35958758/218949409-b82f0f3e-54de-4804-a9ff-f40fa4a4a141.png)
+
+
 # Problem Statement
 Traditional input methods like keyboards, mice, and touchscreens have proven to be effective in daily use, but they may become challenging or even inaccessible in hands-free environments such as virtual and augmented reality. Additionally, not all users, including those with physical disabilities, can effectively use these traditional methods. As a result, there is a pressing need for alternative forms of interaction that are more intuitive, user-friendly, and accessible to a wider range of users, including those with disabilities and those looking for more convenient methods of input in immersive environments.
 
@@ -81,10 +84,10 @@ The application will collect and process images of the user's face, which may ra
 
 # Open Tasks
 - [ ] **Create and train a model for gesture classification**
-  - [ ] Generate training data
+  - [x] Generate training data
     - [x] Gather data of face videos for unsupervised model pretraining
     - [x] Build pipeline to extract and process pose data from face videos
-  - [ ] Create a masked autoencoder (MAE) model
+  - [x] Create a masked autoencoder (MAE) model with ViT and TDCNN backbone
   - [ ] Create a training and validation pipeline and pretrain the model
     - [ ] Create dataset and dataloader classes
     - [ ] Create trasformation classes including masking
