@@ -12,7 +12,9 @@ parser.add_argument('--dependencies', nargs='+', required=True,
                     help="A list of python library name you want to check the license of.")
 parser.add_argument('--accepted_licenses', nargs='*',
                     help="A list of license which are considered acceptable for your project.",
-                    default=["Apache Software License", "Apache 2.0", "BSD", "ZLIB", "MIT", "Unlicense", "CC0", "CC-BY","PSF", "MPL", "Mozilla Public License 2.0", "Historical Permission Notice and Disclaimer", "HPND"])
+                    default=["Apache Software License", "Apache 2.0", "BSD", "ZLIB", "MIT", "Unlicense", "CC0", "CC-BY",
+                             "PSF", "MPL", "Mozilla Public License 2.0", "Historical Permission Notice and Disclaimer",
+                             "HPND"])
 parser.add_argument('--forbidden_licenses', nargs='*',
                     help="A list of license which are considered problematic for your project.",
                     default=["GNU", "GPL", "Commons Clause", "BY-N"])
@@ -49,10 +51,13 @@ accepted_libraries = []
 refused_libraries = []
 maybe_libraries = []
 
+excepted_libraries = ['nvidia-cublas-cu11', 'nvidia-cuda-nvrtc-cu11', 'nvidia-cuda-runtime-cu11', 'nvidia-cudnn-cu11',
+                      'typing_extensions']
+
 
 def is_license_in_list(license, license_list):
     for l in license_list:
-        if l.lower() in license.lower():
+        if l.lower() in license.lower() or l.lower() in excepted_libraries:
             return True
     return False
 
@@ -67,7 +72,7 @@ for library_name in python_dependencies:
 
         if is_license_in_list(library_license, args.forbidden_licenses):
             refused_libraries.append(library_name)
-        elif is_license_in_list(library_license, args.accepted_licenses):
+        elif is_license_in_list(library_license, args.accepted_licenses, excepted_libraries):
             accepted_libraries.append(library_name)
         else:
             maybe_libraries.append(library_name)
@@ -80,10 +85,12 @@ for library_name in python_dependencies:
 def plurial(lst, _if='s', _else=''):
     return _if if len(lst) > 1 else _else
 
+
 if len(unknown_licenses) > 0:
     print(f"Couldn't find the license{plurial(unknown_licenses)} of the following dependencies: {unknown_licenses}")
 
-print(f"\nThe following dependenc{plurial(accepted_libraries, 'y', 'ies')} have an accepted license: {accepted_libraries}")
+print(
+    f"\nThe following dependenc{plurial(accepted_libraries, 'y', 'ies')} have an accepted license: {accepted_libraries}")
 
 if len(refused_libraries) > 0:
     print(f"The following dependencie{plurial(refused_libraries, 'y', 'ies')} have forbidden license(s):")
@@ -94,6 +101,5 @@ if len(maybe_libraries) > 0:
     print(f"The following dependencie{plurial(maybe_libraries, 'y', 'ies')} have license which needs to be reviewed: ")
     for library_name in maybe_libraries:
         print(f"  {library_name}: {library_license_dict[library_name]}")
-
 
 assert len(refused_libraries) == 0 and len(maybe_libraries) == 0 and len(unknown_licenses) == 0
