@@ -55,7 +55,8 @@ excepted_libraries = ['nvidia-cublas-cu11', 'nvidia-cuda-nvrtc-cu11', 'nvidia-cu
                       'typing_extensions']
 
 
-def is_license_in_list(license, license_list):
+def is_license_in_list(license, license_list, excepted_libraries=[]):
+
     for l in license_list:
         if l.lower() in license.lower() or l.lower() in excepted_libraries:
             return True
