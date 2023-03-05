@@ -74,10 +74,14 @@ class TrippelWink(BaseRuleGesture):
         self._r_counter = 0  # count number of frames while winking
         self._l_counter = 0  # count number of frames while winking
         self._blink_counter = 0
-        self.wait = 2
+        self.wait = 5
+        self.blocked = 0
 
         self.wink_r = False
         self.wink_l = False
+        self.prev_r_wink = False
+        self.tipple_blink_flag = False
+
 
     def reset_state(self):
         self._r_counter = 0
@@ -85,6 +89,7 @@ class TrippelWink(BaseRuleGesture):
         self._blink_counter = 0
         self.wink_l = False
         self.wink_r = False
+
 
     def __call__(self, landmarks):
 
@@ -94,7 +99,14 @@ class TrippelWink(BaseRuleGesture):
         :return boolian:
         """
 
+
         r_wink, l_wink = self.blink_detector(landmarks)
+
+        if r_wink and self.tipple_blink_flag:
+            return False
+        else:
+            self.tipple_blink_flag = False
+
         if r_wink and l_wink:  # this is a blink not a wink
             self._blink_counter += 1
             if self._r_counter > self.wait:
@@ -113,7 +125,8 @@ class TrippelWink(BaseRuleGesture):
 
             if self.wink_l:  # this is the second right wink
                 self.reset_state()
-                # print('State reset success')
+                self.tipple_blink_flag = True
+
                 return True
             else:
                 return False

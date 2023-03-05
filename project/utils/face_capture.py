@@ -6,7 +6,7 @@ import time
 from constants import important_keypoints, inv_eye_keypoints
 import os.path as osp
 from demo.rules import TrippelWink
-
+from demo.set_colors import get_custom_face_mesh_contours_style, get_facemesh_contours_connection_style
 
 rescale_ratio = 1
 HEIGHT, WIDTH = int(480 * rescale_ratio), int(640 * rescale_ratio)
@@ -17,6 +17,24 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
 keypoints = list(mp_face_mesh.FACEMESH_IRISES)
+
+
+_RED = (48, 48, 255)
+_GREEN = (48, 255, 48)
+_BLUE = (192, 101, 21)
+_YELLOW = (0, 204, 255)
+_GRAY = (128, 128, 128)
+_PURPLE = (128, 64, 128)
+_PEACH = (180, 229, 255)
+_WHITE = (224, 224, 224)
+
+col_pos = _RED
+col_neg = _BLUE
+col_left = col_neg
+col_right = col_left
+col_face = _WHITE
+
+
 
 def reformat_landmarks(face_landmarks):
     all_landmarks_x = [l.x for l in face_landmarks.landmark]
@@ -69,8 +87,7 @@ def get_fps(prev_frame_time):
     return str(fps), new_frame_time
 
 
-def spatial_normalization(landmarks):
-    pass
+
 
 
 def draw_landmark(face_landmarks, ind, img, text_flag=False):
@@ -185,6 +202,12 @@ n_frames = 0
 all_frames = {}
 # draw_mesh = False
 draw_mesh = True
+blink_state = False
+blink_counter = 0
+
+# Set eye colors
+
+
 with mp_face_mesh.FaceMesh(
         max_num_faces=1,
         refine_landmarks=True,
@@ -212,8 +235,15 @@ with mp_face_mesh.FaceMesh(
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         image_orig = image.copy()
+
+
         if results.multi_face_landmarks:
             if draw_mesh:
+
+                facemesh_contours_connection_style = get_facemesh_contours_connection_style(color_left=col_left,
+                                                                                            color_right=col_right,
+                                                                                            color_face=col_face)
+
                 for face_landmarks in results.multi_face_landmarks:
                     mp_drawing.draw_landmarks(
                         image=image,
@@ -228,8 +258,19 @@ with mp_face_mesh.FaceMesh(
                         landmark_list=face_landmarks,
                         connections=mp_face_mesh.FACEMESH_CONTOURS,
                         landmark_drawing_spec=None,
-                        connection_drawing_spec=mp_drawing_styles
-                            .get_default_face_mesh_contours_style())
+                        connection_drawing_spec=get_custom_face_mesh_contours_style(facemesh_contours_connection_style))
+
+                    # mp_drawing.draw_landmarks(
+                    #     image=image,
+                    #     landmark_list=face_landmarks,
+                    #     connections=mp_face_mesh.FACEMESH_CONTOURS,
+                    #     landmark_drawing_spec=None,
+                    #     connection_drawing_spec=mp_drawing_styles
+                    #         .get_default_face_mesh_contours_style())
+
+
+
+
 
                     mp_drawing.draw_landmarks(
                         image=image,
@@ -282,11 +323,27 @@ with mp_face_mesh.FaceMesh(
         trip_flag = triple_wink(lm)
         # rb, lb = blink_det(lm)
         # print(f'Right eye blink:{triple_wink.wink_r}, Left eye blink:{triple_wink.wink_l}')
+        if triple_wink.wink_r:
+            col_right = col_pos
+        else:
+            col_right = col_neg
+
+        if triple_wink.wink_l:
+            col_left = col_pos
+        else:
+            col_left = col_neg
+
         if trip_flag:
-            flag_counter = 1
+            flag_counter = 15
+            col_face = _PURPLE
+            print(f'Triple Blink Detected:{n_frames}')
         if flag_counter > 0:
             flag_counter -= 1
-            print(f'Triple Blink Detected:{n_frames}')
+        else:
+            col_face = _WHITE
+
+
+
 
 
 cap.release()
