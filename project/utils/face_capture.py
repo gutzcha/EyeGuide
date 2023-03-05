@@ -3,17 +3,30 @@ import mediapipe as mp
 from project.utils.constants import gestures_dict
 import pickle
 import time
-from constants import eye_keypoints, inv_eye_keypoints
+from constants import important_keypoints, inv_eye_keypoints
 import os.path as osp
+from demo.rules import TrippelWink
+
 
 rescale_ratio = 1
 HEIGHT, WIDTH = int(480 * rescale_ratio), int(640 * rescale_ratio)
+triple_wink = TrippelWink()
+blink_det = triple_wink.blink_detector
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
 keypoints = list(mp_face_mesh.FACEMESH_IRISES)
 
+def reformat_landmarks(face_landmarks):
+    all_landmarks_x = [l.x for l in face_landmarks.landmark]
+    all_landmarks_y = [l.y for l in face_landmarks.landmark]
+    # all_landmarks_z = [l.z for l in face_landmarks.landmark]
+    res = []
+    for i, (x, y) in enumerate(zip(all_landmarks_x, all_landmarks_y)):
+        # print(f'{i}:{(x,y,z)}')
+        res.append(dict(results=[x, y]))
+    return res
 
 def draw_eyes(face_landmarks, img, landmark_inds):
     if len(landmark_inds) < 2:
@@ -83,10 +96,10 @@ def draw_mini_face(face_landmarks, img):
     all_landmarks_x = [l.x for l in face_landmarks.landmark]
     all_landmarks_y = [l.y for l in face_landmarks.landmark]
     all_landmarks_z = [l.z for l in face_landmarks.landmark]
-
-    for i, (x,y,z) in enumerate(zip(all_landmarks_x,all_landmarks_y,all_landmarks_z)):
-        print(f'{i}:{(x,y,z)}')
-
+    # res = []
+    # for i, (x,y,z) in enumerate(zip(all_landmarks_x,all_landmarks_y,all_landmarks_z)):
+    #     # print(f'{i}:{(x,y,z)}')
+    #     res.append(dict(results=[x,y]))
     min_x, max_x, diff_x = min(all_landmarks_x), max(all_landmarks_x), max(all_landmarks_x) - min(all_landmarks_x)
     min_y, max_y, diff_y = min(all_landmarks_y), max(all_landmarks_y), max(all_landmarks_y) - min(all_landmarks_y)
 
@@ -149,7 +162,7 @@ drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 video_path = '300VW_Dataset_2015_12_14\\300VW_Dataset_2015_12_14\\001\\vid.avi'
 # cap = cv2.VideoCapture(osp.join(root_folder, video_path))
 cap = cv2.VideoCapture(0)
-
+flag_counter = 0
 # q - quit
 # w - blink left
 # e - blink right
@@ -230,9 +243,9 @@ with mp_face_mesh.FaceMesh(
         else:
             continue
 
-        face_landmarks_arr.append(results.multi_face_landmarks[0])
-        img_arr.append(image)
-        image_orig_arr.append(image_orig)
+        # face_landmarks_arr.append(results.multi_face_landmarks[0])
+        # img_arr.append(image)
+        # image_orig_arr.append(image_orig)
 
         # [draw_landmark(face_landmarks, ind=i, img=image, text_flag=True) for i in range(len(face_landmarks.landmark)) if i%8==0]
         draw_mini_face(face_landmarks, image)
@@ -253,13 +266,28 @@ with mp_face_mesh.FaceMesh(
         key = cv2.waitKey(1)
         # key = -1
         n_frames += 1
-        if key == -1:
-            gesture_arr.append('bg')
-        elif chr(key) in gestures_dict:
-            gesture_arr.append(gestures_dict[chr(key)])
-            print(chr(key))
-        elif key == ord('q'):
+        # if key == -1:
+            # gesture_arr.append('bg')
+        # elif chr(key) in gestures_dict:
+            # gesture_arr.append(gestures_dict[chr(key)])
+            # print(chr(key))
+        # elif key == ord('q'):
+        if key == ord('q'):
             break
+
+
+        # test wink detection
+        lm = reformat_landmarks(face_landmarks)
+
+        trip_flag = triple_wink(lm)
+        # rb, lb = blink_det(lm)
+        # print(f'Right eye blink:{triple_wink.wink_r}, Left eye blink:{triple_wink.wink_l}')
+        if trip_flag:
+            flag_counter = 1
+        if flag_counter > 0:
+            flag_counter -= 1
+            print(f'Triple Blink Detected:{n_frames}')
+
 
 cap.release()
 all_frames = {}

@@ -1,8 +1,10 @@
 import os.path as osp
 
-root_folder = 'C:\\Users\\user\\EyeGuide\\samples'
+root_folder = 'samples'
 sample_video_name = 'vid.avi'
+sample_pred_name = 'vid.json'
 full_path: str = osp.join(root_folder, sample_video_name)
+full_path_pred: str = osp.join(root_folder, sample_pred_name)
 
 NUM_LANDMARKS = 478
 
