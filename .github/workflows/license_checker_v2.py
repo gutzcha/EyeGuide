@@ -55,10 +55,10 @@ excepted_libraries = ['nvidia-cublas-cu11', 'nvidia-cuda-nvrtc-cu11', 'nvidia-cu
                       'typing_extensions']
 
 
-def is_license_in_list(license, license_list, excepted_libraries=[]):
+def is_license_in_list(license, license_list):
 
     for l in license_list:
-        if l.lower() in license.lower() or l.lower() in excepted_libraries:
+        if l.lower() in license.lower():
             return True
     return False
 
@@ -71,9 +71,11 @@ for library_name in python_dependencies:
         # First checks if its refused_licenses, then if its in accepted_licenses, else add in the maybe list
         # TODO : Should use regex instead?
 
+
+
         if is_license_in_list(library_license, args.forbidden_licenses):
             refused_libraries.append(library_name)
-        elif is_license_in_list(library_license, args.accepted_licenses, excepted_libraries):
+        elif is_license_in_list(library_license, args.accepted_licenses) or library_name in excepted_libraries:
             accepted_libraries.append(library_name)
         else:
             maybe_libraries.append(library_name)
