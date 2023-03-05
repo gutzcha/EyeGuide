@@ -71,8 +71,6 @@ for library_name in python_dependencies:
         # First checks if its refused_licenses, then if its in accepted_licenses, else add in the maybe list
         # TODO : Should use regex instead?
 
-
-
         if is_license_in_list(library_license, args.forbidden_licenses):
             refused_libraries.append(library_name)
         elif is_license_in_list(library_license, args.accepted_licenses) or library_name in excepted_libraries:
