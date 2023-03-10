@@ -379,6 +379,7 @@ class CustomGesture():
         self.random_blink = self.get_random_blink()
         self.wait_counter = 0
         self.wait_period = 100
+        self.state = False
 
 
     def update_default_threshold_map(self, threshold_map):
@@ -402,10 +403,15 @@ class CustomGesture():
         return
 
     def reset_state(self):
+
+        if self.wait_counter > 0:  # If in waiting period, do not reset
+            return
+
         for action_object in self.action_array:
             action_object.reset_state()
-        self.wait_counter = 0
+
         self.reset_counter = 0
+        self.state = False
 
     def pars_command_array(self, command_array):
         '''
@@ -429,8 +435,8 @@ class CustomGesture():
         all_commands = []
         ret = []
         command_array = command_array.split('->')
-        assert len(command_array) == 3, 'Incorrect command array, the command array must contain 3 actions,' \
-                                        ' separated by an "->" mark '
+        # assert len(command_array) == 3, 'Incorrect command array, the command array must contain 3 actions,' \
+        #                                 ' separated by an "->" mark '
         for action in command_array:
             sub_actions = action.split('|')
             assert len(sub_actions) == 4, f'Incorrect action, the action must contain 4 parts,' \
@@ -492,8 +498,6 @@ class CustomGesture():
         assert(len(self.threshold_map[action_obj.name])) == len(res),'The length of the results and the length of the thresholds must match'
         res = np.array(res) > np.array(self.threshold_map[action_obj.name])
 
-
-
         # if res[1]:
         #     a = 1
         return action_obj(res)
@@ -504,14 +508,19 @@ class CustomGesture():
         :param lm: land mark array
         :return flag:
         '''
-
-        # check if reset command was issued
+        if self.wait_counter > 0:
+            self.wait_counter -= 1
+            return True
+        #
+        # # check if reset command was issued
         if self.call_action(results, self.reset_state_action):
-            self.reset_state_action.reset_state()
-            self.random_blink.reset_state()
-            self.reset_state()
-            # print('RESET DETECTED')
-            return False
+            pass
+        #     self.reset_state_action.reset_state()
+        #     self.random_blink.reset_state()
+        #     self.reset_state()
+        #     # print('RESET DETECTED')
+        #     return False
+
         elif self.call_action(results, self.random_blink):  # ignore random blinking
             self.reset_state_action.reset_state()
             self.random_blink.reset_state()
@@ -535,14 +544,17 @@ class CustomGesture():
 
         results_out = all(np.array(self.get_all_states()))
         if results_out:
-            if self.wait_counter < self.wait_period:
-                self.wait_counter += 1
-            else:
+            if not self.state:  # This is the first activation, start waiting period
+                self.state = True
+                self.wait_counter = self.wait_period
+        else:
+            if self.state:  # This was activated and the waiting period is over, now reset
                 self.reset_state()
+
         return results_out
 
     def proclaim_detection(self, print_flag=False):
-        ret = f'Command {self.name} has been activated'
+        ret = f'{self.name}'
         if print_flag:
             print(ret)
         return ret
