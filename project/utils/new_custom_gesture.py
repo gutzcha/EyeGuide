@@ -5,25 +5,20 @@ import pickle
 import time
 from constants import important_keypoints, inv_eye_keypoints
 import os.path as osp
-from demo.rules import TrippelWink, RaiseEyebrows
+from demo.rules import TrippelWink, RaiseEyebrows, GlobalGestureExtractor, CustomGesture
 from demo.set_colors import get_custom_face_mesh_contours_style, get_facemesh_contours_connection_style
 from mediapipe.python.solutions import face_mesh_connections
 import numpy as np
 
 rescale_ratio = 1
 HEIGHT, WIDTH = int(480 * rescale_ratio), int(640 * rescale_ratio)
-# triple_wink = TrippelWink()
-# blink_det = triple_wink.blink_detector
-# eyebrow_det = RaiseEyebrows(1.3)
-
-
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
+
 keypoints = list(mp_face_mesh.FACEMESH_IRISES)
 keypoints_eyebrows_left = face_mesh_connections.FACEMESH_LEFT_EYEBROW
 keypoints_eyebrows_right = face_mesh_connections.FACEMESH_RIGHT_EYEBROW
-keypoints_lips = face_mesh_connections.FACEMESH_LIPS
 
 _RED = (48, 48, 255)
 _GREEN = (48, 255, 48)
@@ -44,7 +39,78 @@ col_right_eyebrow = col_neg
 col_face = _WHITE
 col_lips = _WHITE
 
+command_array_1 = 'right_eye|close|10|3->left_eye|close|10|3->right_eye|close|10|3'
+command_array_2 = 'both_eyebrows|up|10|3->both_eyebrows|up|10|3->both_eyebrows|up|10|3'
+command_array_3 = 'lips_vertical|open|10|3->lips_horizontal|open|10|3->lips_wide|open|10|3'
+command_array_4 = 'both_eyebrows|up|10|3->right_eye|close|10|3->lips_wide|open|10|3'
 
+
+custom_gesture_array = [
+    CustomGesture('Wink right, left right', command_array_1),
+    CustomGesture('Lift both eyebrowsX3', command_array_2),
+    CustomGesture('Smile, say ahh, lips wide', command_array_3),
+    CustomGesture('Lift both eyebrows, right eye, lips wide', command_array_4)
+]
+
+# custom_gesture_array = [
+#     CustomGesture('Eyes: right, left right', command_array_1),
+# ]
+
+global_extractor = GlobalGestureExtractor()
+
+
+def set_colors_from_results(res):
+    threshold_map = custom_gesture_array[0].threshold_map
+    if res is None:
+        return get_facemesh_contours_connection_style(
+            color_left_eye=col_neg,
+            color_right_eye=col_neg,
+            color_left_eyebrow=col_neg,
+            color_right_eyebrow=col_neg,
+            color_lips=col_neg,
+            color_face=col_neg)
+
+    # left eye
+    if res['eyes'][1] > threshold_map['left_eye'][1]:
+        col_left_eye = col_pos
+    else:
+        col_left_eye = col_neg
+
+    # right eye
+    if res['eyes'][0] > threshold_map['right_eye'][0]:
+        col_right_eye = col_pos
+    else:
+        col_right_eye = col_neg
+
+    # left eyebrow
+    if res['eyebrows'][1] > threshold_map['left_eyebrow'][1]:
+        col_left_eyebrow = col_pos
+    else:
+        col_left_eyebrow = col_neg
+
+    # right eyebrow
+    if res['eyebrows'][0] > threshold_map['right_eyebrow'][0]:
+        col_right_eyebrow = col_pos
+    else:
+        col_right_eyebrow = col_neg
+
+    # lips horizontal or vertical or wide
+    if res['lips'][0] > threshold_map['lips_horizontal'][0] and res['lips'][1] > threshold_map['lips_vertical'][1]:
+        col_lips = _PURPLE
+    elif res['lips'][0] > threshold_map['lips_horizontal'][0]:
+        col_lips = _GREEN
+    elif res['lips'][1] > threshold_map['lips_vertical'][1]:
+        col_lips = _YELLOW
+    else:
+        col_lips = col_neg
+
+    return get_facemesh_contours_connection_style(
+        color_left_eye=col_left_eye,
+        color_right_eye=col_right_eye,
+        color_left_eyebrow=col_left_eyebrow,
+        color_right_eyebrow=col_right_eyebrow,
+        color_lips=col_lips,
+        color_face=col_face)
 
 
 def reformat_landmarks(face_landmarks):
@@ -56,6 +122,7 @@ def reformat_landmarks(face_landmarks):
         # print(f'{i}:{(x,y,z)}')
         res.append(dict(results=[x, y]))
     return res
+
 
 def draw_eyes(face_landmarks, img, landmark_inds):
     if len(landmark_inds) < 2:
@@ -98,9 +165,6 @@ def get_fps(prev_frame_time):
     return str(fps), new_frame_time
 
 
-
-
-
 def draw_landmark(face_landmarks, ind, img, text_flag=False):
     landmak = face_landmarks.landmark[ind]
     height, width, c = image.shape
@@ -110,7 +174,7 @@ def draw_landmark(face_landmarks, ind, img, text_flag=False):
     font = cv2.FONT_HERSHEY_SIMPLEX
 
     if text_flag:
-        img = cv2.putText(img, str(ind), (x, y), font, 0.5, (100, 255, 0), 1, cv2.LINE_AA)
+        img = cv2.putText(img, str(ind), (x, y), font, 1, (100, 255, 0), 1, cv2.LINE_AA)
     else:
         img = cv2.circle(img, (x, y), 5, (255, 0, 255), -1)
     return img
@@ -142,48 +206,6 @@ def draw_mini_face(face_landmarks, img):
         cv2.circle(img, (lx, ly), 1, (255, 0, 255), -1)
 
 
-# For static images:
-# IMAGE_FILES = []
-# drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-# with mp_face_mesh.FaceMesh(
-#     static_image_mode=True,
-#     max_num_faces=1,
-#     refine_landmarks=True,
-#     min_detection_confidence=0.5) as face_mesh:
-#   for idx, file in enumerate(IMAGE_FILES):
-#     image = cv2.imread(file)
-#     # Convert the BGR image to RGB before processing.
-#     results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-#
-#     # Print and draw face mesh landmarks on the image.
-#     if not results.multi_face_landmarks:
-#       continue
-#     annotated_image = image.copy()
-#     for face_landmarks in results.multi_face_landmarks:
-#       print('face_landmarks:', face_landmarks)
-#       mp_drawing.draw_landmarks(
-#           image=annotated_image,
-#           landmark_list=face_landmarks,
-#           connections=mp_face_mesh.FACEMESH_TESSELATION,
-#           landmark_drawing_spec=None,
-#           connection_drawing_spec=mp_drawing_styles
-#           .get_default_face_mesh_tesselation_style())
-#       mp_drawing.draw_landmarks(
-#           image=annotated_image,
-#           landmark_list=face_landmarks,
-#           connections=mp_face_mesh.FACEMESH_CONTOURS,
-#           landmark_drawing_spec=None,
-#           connection_drawing_spec=mp_drawing_styles
-#           .get_default_face_mesh_contours_style())
-#       mp_drawing.draw_landmarks(
-#           image=annotated_image,
-#           landmark_list=face_landmarks,
-#           connections=mp_face_mesh.FACEMESH_IRISES,
-#           landmark_drawing_spec=None,
-#           connection_drawing_spec=mp_drawing_styles
-#           .get_default_face_mesh_iris_connections_style())
-#     cv2.imwrite('/tmp/annotated_image' + str(idx) + '.png', annotated_image)
-
 # For webcam input:
 root_folder = 'C:\\Users\\user\\EyeGuide\\data'
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
@@ -191,13 +213,6 @@ video_path = '300VW_Dataset_2015_12_14\\300VW_Dataset_2015_12_14\\001\\vid.avi'
 # cap = cv2.VideoCapture(osp.join(root_folder, video_path))
 cap = cv2.VideoCapture(0)
 flag_counter = 0
-# q - quit
-# w - blink left
-# e - blink right
-# r - smile
-# t - frown
-#   - gb
-
 
 # used to record the time when we processed last frame
 prev_frame_time = 0
@@ -215,10 +230,7 @@ all_frames = {}
 draw_mesh = True
 blink_state = False
 blink_counter = 0
-
-# Set eye colors
-
-
+results_facial_exp = None
 with mp_face_mesh.FaceMesh(
         max_num_faces=1,
         refine_landmarks=True,
@@ -247,17 +259,16 @@ with mp_face_mesh.FaceMesh(
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         image_orig = image.copy()
 
-
         if results.multi_face_landmarks:
             if draw_mesh:
-
-                facemesh_contours_connection_style = get_facemesh_contours_connection_style(
-                    color_left_eye=col_left_eye,
-                    color_right_eye=col_right_eye,
-                    color_left_eyebrow=col_left_eyebrow,
-                    color_right_eyebrow=col_right_eyebrow,
-                    color_lips=col_lips,
-                    color_face=col_face)
+                facemesh_contours_connection_style = set_colors_from_results(results_facial_exp)
+                # facemesh_contours_connection_style = get_facemesh_contours_connection_style(
+                #     color_left_eye=col_left_eye,
+                #     color_right_eye=col_right_eye,
+                #     color_left_eyebrow=col_left_eyebrow,
+                #     color_right_eyebrow=col_right_eyebrow,
+                #     color_lips=col_lips,
+                #     color_face=col_face)
 
                 for face_landmarks in results.multi_face_landmarks:
                     mp_drawing.draw_landmarks(
@@ -283,10 +294,6 @@ with mp_face_mesh.FaceMesh(
                     #     connection_drawing_spec=mp_drawing_styles
                     #         .get_default_face_mesh_contours_style())
 
-
-
-
-
                     mp_drawing.draw_landmarks(
                         image=image,
                         landmark_list=face_landmarks,
@@ -299,20 +306,16 @@ with mp_face_mesh.FaceMesh(
         else:
             continue
 
-        # face_landmarks_arr.append(results.multi_face_landmarks[0])
-        # img_arr.append(image)
-        # image_orig_arr.append(image_orig)
         keypoints_eyebrows_left_list = list(set(np.array(list(keypoints_eyebrows_left)).ravel()))
         keypoints_eyebrows_right_list = list(set(np.array(list(keypoints_eyebrows_right)).ravel()))
-        keypoints_lips = list(set(np.array(list(keypoints_lips)).ravel()))
-        [draw_landmark(face_landmarks, ind=i, img=image, text_flag=True) for i in keypoints_lips]
+
+        # [draw_landmark(face_landmarks, ind=i, img=image, text_flag=True) for i in keypoints_eyebrows_right_list]
         draw_mini_face(face_landmarks, image)
 
         # Flip the image horizontally for a selfie-view display.
         # image = cv2.flip(image, 1)
 
         # display fps
-
         fps, prev_frame_time = get_fps(prev_frame_time)
 
         if n_frames % 5 == 0:
@@ -320,69 +323,28 @@ with mp_face_mesh.FaceMesh(
 
         display_fps(last_fps, image)
 
+
+        ################################################################################################################
+        lm = reformat_landmarks(face_landmarks)
+        results_facial_exp = global_extractor(lm)
+        flags = [custom_gesture(results_facial_exp) for custom_gesture in custom_gesture_array]
+        # print(custom_gesture)
+        # print(custom_gesture_array[0].get_all_states())
+        # print(results_facial_exp['lips'])
+        for flag, custom_gesture in zip(flags, custom_gesture_array):
+            if flag:
+                print_string = custom_gesture.proclaim_detection()
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(image, print_string, (10, HEIGHT-10), font, 0.7, _RED, 3, cv2.LINE_AA)
+        ################################################################################################################
+
         cv2.imshow('MediaPipe Face Mesh', image)
         key = cv2.waitKey(1)
         # key = -1
         n_frames += 1
-        # if key == -1:
-            # gesture_arr.append('bg')
-        # elif chr(key) in gestures_dict:
-            # gesture_arr.append(gestures_dict[chr(key)])
-            # print(chr(key))
-        # elif key == ord('q'):
+
         if key == ord('q'):
             break
 
-
-        # # test wink detection
-        # lm = reformat_landmarks(face_landmarks)
-        #
-        # trip_flag = triple_wink(lm)
-        # # rb, lb = blink_det(lm)
-        # # print(f'Right eye blink:{triple_wink.wink_r}, Left eye blink:{triple_wink.wink_l}')
-        # if triple_wink.wink_r:
-        #     col_right_eye = col_pos
-        # else:
-        #     col_right_eye = col_neg
-        #
-        # if triple_wink.wink_l:
-        #     col_left_eye = col_pos
-        # else:
-        #     col_left_eye = col_neg
-        #
-        # if trip_flag:
-        #     flag_counter = 35
-        #     col_face = _PURPLE
-        #     print(f'Triple Blink Detected:{n_frames}')
-        # if flag_counter > 0:
-        #     flag_counter -= 1
-        # else:
-        #     col_face = _WHITE
-        #
-        # r_eyebrow_flag, l_eyebrow_flag, r_eyebrow_ratio, l_eyebrow_ratio = eyebrow_det(lm)
-        # if r_eyebrow_flag:
-        #     col_right_eyebrow = col_pos
-        # else:
-        #     col_right_eyebrow = col_neg
-        #
-        # if l_eyebrow_flag:
-        #     col_left_eyebrow = col_pos
-        # else:
-        #     col_left_eyebrow = col_neg
-        # print(f'r_eyebrow_flag: {r_eyebrow_flag}, l_eyebrow_flag: {l_eyebrow_flag}, r_eyebrow_ratio: {r_eyebrow_ratio}, l_eyebrow_ratio: {l_eyebrow_ratio}')
-
-
 cap.release()
 all_frames = {}
-# save_flag = False
-# if save_flag:
-#     for label, landmark, image_orig, frame_landmark, frame_id in zip(gesture_arr, face_landmarks_arr, image_orig_arr,
-#                                                                      img_arr, range(n_frames)):
-#         all_frames[frame_id] = {'label': label,
-#                                 'landmarks': landmark,
-#                                 'frame_orig': image_orig,
-#                                 'frame_landmarks': frame_landmark}
-#     # Directly from dictionary
-#     timestr = time.strftime("%Y%m%d-%H%M")
-#     with open(f'../assets/dataset_{timestr}.pickle', 'wb') as handle:
-#         pickle.dump(all_frames, handle, protocol=pickle.HIGHEST_PROTOCOL)

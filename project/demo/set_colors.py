@@ -47,19 +47,24 @@ _FACEMESH_CONTOURS_CONNECTION_STYLE = {
         DrawingSpec(color=_WHITE, thickness=_THICKNESS_CONTOURS)
 }
 
-def get_facemesh_contours_connection_style(color_left=_GREEN, color_right=_RED, color_face=_WHITE):
+def get_facemesh_contours_connection_style(color_left_eye=_GREEN,
+                                           color_right_eye=_GREEN,
+                                           color_left_eyebrow=_RED,
+                                           color_right_eyebrow=_RED,
+                                           color_lips=_WHITE,
+                                           color_face=_WHITE):
 
     FACEMESH_CONTOURS_CONNECTION_STYLE = {
         face_mesh_connections.FACEMESH_LIPS:
-            DrawingSpec(color=color_face, thickness=_THICKNESS_CONTOURS),
+            DrawingSpec(color=color_lips, thickness=_THICKNESS_CONTOURS),
         face_mesh_connections.FACEMESH_LEFT_EYE:
-            DrawingSpec(color=color_left, thickness=_THICKNESS_CONTOURS),
+            DrawingSpec(color=color_left_eye, thickness=_THICKNESS_CONTOURS),
         face_mesh_connections.FACEMESH_LEFT_EYEBROW:
-            DrawingSpec(color=color_left, thickness=_THICKNESS_CONTOURS),
+            DrawingSpec(color=color_left_eyebrow, thickness=_THICKNESS_CONTOURS),
         face_mesh_connections.FACEMESH_RIGHT_EYE:
-            DrawingSpec(color=color_right, thickness=_THICKNESS_CONTOURS),
+            DrawingSpec(color=color_right_eye, thickness=_THICKNESS_CONTOURS),
         face_mesh_connections.FACEMESH_RIGHT_EYEBROW:
-            DrawingSpec(color=color_right, thickness=_THICKNESS_CONTOURS),
+            DrawingSpec(color=color_right_eyebrow, thickness=_THICKNESS_CONTOURS),
         face_mesh_connections.FACEMESH_FACE_OVAL:
             DrawingSpec(color=color_face, thickness=_THICKNESS_CONTOURS)
     }
