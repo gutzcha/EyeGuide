@@ -235,6 +235,8 @@ class FacialWriting(ReadGestures):
         self.current_string = ''
         get_gesture_array = self.get_gesture_array()
         super(FacialWriting, self).__init__(get_gesture_array)
+        self.caps_on_gesture_name_action_name = 'both_eyebrows'
+
 
     def display_results(self, image, flags):
         height, width, _ = image.shape
@@ -264,6 +266,7 @@ class FacialWriting(ReadGestures):
 
     def get_gesture_array(self):
         gesture_letter_array = [
+
             CustomGesture('A', 'right_eye|close|5|3->right_eye|close|5|15', reset_period=120),
             CustomGesture('B', 'right_eye|close|5|3->left_eye|close|5|15', reset_period=120),
             CustomGesture('C', 'both_eyebrows|up|5|3->both_eyebrows|up|5|15', reset_period=120),
@@ -271,6 +274,7 @@ class FacialWriting(ReadGestures):
             CustomGesture('E', 'lips_vertical|open|10|3->lips_horizontal|open|10|15', reset_period=120),
             CustomGesture('F', 'lips_horizontal|open|10|3->lips_horizontal|open|10|15', reset_period=120),
             CustomGesture('back', 'both_eyes|close|10|3', reset_period=120)
+
         ]
         return gesture_letter_array
 
@@ -300,8 +304,8 @@ if __name__ == '__main__':
         CustomGesture('Right Click: Rise both eyebrows for 2 sec', default_command_array_2, wait_period=100),
         CustomGesture('Double Click: Rise both eyebrows for 2 sec X2 ', default_command_array_3, wait_period=100)
     ]
-    read_gesture = ReadGestures(custom_gesture_array)
-    read_gesture.run()
+    # read_gesture = ReadGestures(custom_gesture_array)
+    # read_gesture.run()
 
-    # facial_writing = FacialWriting()
-    # facial_writing.run()
+    facial_writing = FacialWriting()
+    facial_writing.run()

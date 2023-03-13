@@ -170,7 +170,7 @@ class OpenLips:
 
 
 class SingleActionTracker():
-    def __init__(self, name: str, action: List[bool] = None, hold_period: int = 0, wait_period: int = 0) -> object:
+    def __init__(self, name: str, action: List[bool] = None, hold_period: int = 0, wait_period: int = 0):
 
         if action is None:
             action = [False, False]
@@ -191,14 +191,14 @@ class SingleActionTracker():
         self.wait_counter = 0
         self.hold_counter = 0
         self.grace_counter = 0
-        self.flags = [False, False]
+        self.flags = [-100]
         self.state = False
 
     def __call__(self, results):
 
         # place holder
         if results is None:
-            self.flags = -100
+            self.flags = [-100]
             self.state = False
             return self.state
 
@@ -311,8 +311,6 @@ class CustomGesture:
             'lips_vertical': 'lips',
             'lips_horizontal': 'lips',
             'lips_wide': 'lips'}
-
-
 
         self.action_array = self.pars_command_array(command_array)
         self.default_reset_state_action_name = 'both_eyes'
@@ -438,10 +436,9 @@ class CustomGesture:
             return SingleActionTracker(name='place holder')
 
         return SingleActionTracker(name=self.default_reset_state_action_name,
-                                          action=self.available_parts_dict['both_eyes']['close'],
-                                          hold_period=20,
-                                          wait_period=0)
-
+                                   action=self.available_parts_dict['both_eyes']['close'],
+                                   hold_period=20,
+                                   wait_period=0)
 
     def get_random_blink(self):
         # close both eyes for 3 frames
@@ -462,6 +459,18 @@ class CustomGesture:
 
     def call_sim_action(self, results, action_obj_array: list[SingleActionTracker]):
         return np.all([self.call_action(results, act) for act in action_obj_array])
+
+    def persistent_action(self, results, action_name):
+        action_name_translated = self.action_translation[action_name]
+        res = results[action_name]
+        if len(res) == 1:
+            res = [res]
+
+        assert (len(self.threshold_map[action_name])) == len(
+            res), 'The length of the results and the length of the thresholds must match'
+        res = np.array(res) > np.array(self.threshold_map[action_name])
+        return np.all(res)
+
 
     def call_action(self, results, action_obj: SingleActionTracker):
         action_name = self.action_translation[action_obj.name]
