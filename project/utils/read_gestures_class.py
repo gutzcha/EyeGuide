@@ -3,7 +3,7 @@ import mediapipe as mp
 
 import time
 
-from demo.rules import TrippelWink, RaiseEyebrows, GlobalGestureExtractor, CustomGesture
+from demo.rules import GlobalGestureExtractor, CustomGesture
 from demo.set_colors import get_custom_face_mesh_contours_style, get_facemesh_contours_connection_style
 import numpy as np
 from utils.constants import COLORS
@@ -106,7 +106,7 @@ class ReadGestures():
                 flags = [custom_gesture(results_facial_exp) for custom_gesture in self.custom_gesture_array]
 
                 # debug
-                print(flags)
+                # print(flags)
                 # print(results_facial_exp)
 
                 self.display_results(image, flags)
@@ -240,9 +240,11 @@ class FacialWriting(ReadGestures):
         height, width, _ = image.shape
         for flag, custom_gesture in zip(flags, self.custom_gesture_array):
             if flag:
-                #debug
+
                 print_string = custom_gesture.proclaim_detection()
-                print(print_string)
+
+                # debug
+                # print(print_string)
                 if print_string == 'back':
                     if len(self.current_string)>0:
                         self.current_string = self.current_string[:-1]
@@ -291,20 +293,20 @@ if __name__ == '__main__':
     default_command_array_3 = 'both_eyebrows|up|20|3->both_eyebrows|up|20|30'
 
     custom_gesture_array = [
-        CustomGesture('Take a screenshot: Wink right, left right', command_array_1),
-        CustomGesture('Left click and hold: Lift both eyebrowsX3', command_array_2),
-        CustomGesture('Zoom in/out mode: Smile, say ahh, lips wide', command_array_3),
-        CustomGesture('Dragging mode: Lift both eyebrows, right eye, lips wide', command_array_4),
-        CustomGesture('Left click: Say ahh X2', command_array_5),
-        CustomGesture('Close window: Right wink X3', command_array_6),
-        CustomGesture('Left click and hold: Say ahh X3', command_array_7),
-        CustomGesture('Reset all gestures: close both eyes for 2 sec', default_command_array_1),
-        CustomGesture('Right Click: Rise both eyebrows for 2 sec', default_command_array_2),
-        CustomGesture('Double Click: Rise both eyebrows for 2 sec X2 ', default_command_array_3)
+        CustomGesture('Take a screenshot: Wink right, left right', command_array_1, wait_period=100),
+        CustomGesture('Left click and hold: Lift both eyebrowsX3', command_array_2, wait_period=100),
+        CustomGesture('Zoom in/out mode: Smile, say ahh, lips wide', command_array_3, wait_period=100),
+        CustomGesture('Dragging mode: Lift both eyebrows, right eye, lips wide', command_array_4, wait_period=100),
+        CustomGesture('Left click: Say ahh X2', command_array_5, wait_period=100),
+        CustomGesture('Close window: Right wink X3', command_array_6, wait_period=100),
+        CustomGesture('Left click and hold: Say ahh X3', command_array_7, wait_period=100),
+        CustomGesture('Reset all gestures: close both eyes for 2 sec', default_command_array_1, wait_period=100),
+        CustomGesture('Right Click: Rise both eyebrows for 2 sec', default_command_array_2, wait_period=100),
+        CustomGesture('Double Click: Rise both eyebrows for 2 sec X2 ', default_command_array_3, wait_period=100)
     ]
-    # read_gesture = ReadGestures(custom_gesture_array)
-    # read_gesture.run()
+    read_gesture = ReadGestures(custom_gesture_array)
+    read_gesture.run()
 
-    facial_writing = FacialWriting()
-    facial_writing.run()
+    # facial_writing = FacialWriting()
+    # facial_writing.run()
 

@@ -33,7 +33,7 @@ class RaiseEyebrows():
         self.left_eyebrow_corner_ind = 285
         self.right_eyebrow_corner_ind = 55
 
-    def __call__(self, landmarks) -> dict:
+    def __call__(self, landmarks):
         landmarks = np.array([L['results'] for L in landmarks])
 
         # Right eyes
@@ -65,7 +65,7 @@ class RaiseEyebrows():
         re_ratio = rh_distance / rv_distance
         le_ratio = lh_distance / lv_distance
 
-        return dict(right_eyebrow=-re_ratio, left_eyebrow=-le_ratio)
+        return -re_ratio, -le_ratio
 
 
 class GesturePlaceHolder(BaseRuleGesture):
@@ -74,7 +74,7 @@ class GesturePlaceHolder(BaseRuleGesture):
 
     def __call__(self, landmarks):
 
-        return defaultdict(lambda: [-10, -10])
+        return [-100, -100]
 
 
 class Blinking:
@@ -82,7 +82,7 @@ class Blinking:
         self.right_indices = right_indices
         self.left_indices = left_indices
 
-    def __call__(self, landmarks) -> dict:
+    def __call__(self, landmarks):
         landmarks = np.array([L['results'] for L in landmarks])
 
         # Right eyes
@@ -168,78 +168,6 @@ class OpenLips:
         vertical_ratio = v_lips_distance / nose_distance
 
         return horizontal_ratio, vertical_ratio
-
-
-class TrippelWink(BaseRuleGesture):
-    def __init__(self, th=5.5, right_indices=RIGHT_EYE, left_indices=LEFT_EYE):
-        super().__init__(th)
-        self.blink_detector = Blinking(self.th, right_indices, left_indices)
-        self._r_counter = 0  # count number of frames while winking
-        self._l_counter = 0  # count number of frames while winking
-        self._blink_counter = 0
-        self.wait = 2
-        self.blocked = 0
-
-        self.wink_r = False
-        self.wink_l = False
-        self.prev_r_wink = False
-        self.tipple_blink_flag = False
-
-    def reset_state(self):
-        self._r_counter = 0
-        self._l_counter = 0
-        self._blink_counter = 0
-        self.wink_l = False
-        self.wink_r = False
-
-    def __call__(self, landmarks):
-
-        """
-        Determine if there was a triple winking right->left->right
-        :param landmarks:
-        :return boolian:
-        """
-
-        r_wink, l_wink = self.blink_detector(landmarks)
-
-        if r_wink and self.tipple_blink_flag:
-            return False
-        else:
-            self.tipple_blink_flag = False
-
-        if r_wink and l_wink:  # this is a blink not a wink
-            self._blink_counter += 1
-            if self._r_counter > self.wait:
-                self.reset_state()
-            # print('State reset blink')
-            # print(f'res right:{r_wink}, res left:{l_wink}')
-            return False
-
-        if (not r_wink) and (not l_wink):
-            return False
-
-        if r_wink:  # only right eye is winking
-            self._r_counter += 1
-            if self._r_counter > self.wait:  # if the eye was shut long enough, this is a wink
-                self.wink_r = True
-
-            if self.wink_l:  # this is the second right wink
-                self.reset_state()
-                self.tipple_blink_flag = True
-
-                return True
-            else:
-                return False
-
-        if l_wink:
-            if not self.wink_r:  # the first eye to wink must be the right
-                self.reset_state()
-                # print('State reset first left blink')
-            else:
-                self._l_counter += 1  # if the right eye already winked, advance counter
-                if self._l_counter > self.wait:
-                    self.wink_l = True
-            return False
 
 
 class SingleActionTracker():
@@ -330,7 +258,7 @@ class GlobalGestureExtractor:
 
         results = {}
         for name, func in self.action_map.items():
-            results[name] = func(lm)
+            results[name] = (func(lm))
         self.results = results
         return results
 
@@ -378,6 +306,21 @@ class CustomGesture:
             'lips_vertical': 'lips',
             'lips_horizontal': 'lips',
             'lips_wide': 'lips'}
+
+        # self.action_translation = {
+        #     'right_eye': {'right_eye': True, 'left_eye': False},
+        #     'left_eye': {'right_eye': False, 'left_eye': True},
+        #     'both_eyes': {'right_eye': True, 'left_eye': True},
+        #
+        #     'right_eyebrow': {'right_eyebrow': True, 'left_eyebrow': False},
+        #     'left_eyebrow': {'right_eyebrow': False, 'left_eyebrow': True},
+        #     'both_eyebrows': {'right_eyebrow': True, 'left_eyebrow': True},
+        #
+        #     'lips_vertical': {'lips_vertical': True, 'lips_horizontal': False},
+        #     'lips_horizontal': {'lips_vertical': False, 'lips_horizontal': True},
+        #     'lips_wide': {'lips_vertical': True, 'lips_horizontal': True}
+        # }
+
 
         self.action_array = self.pars_command_array(command_array)
         self.default_reset_state_action_name = 'both_eyes'
