@@ -39,11 +39,11 @@ col_right_eyebrow = col_neg
 col_face = _WHITE
 col_lips = _WHITE
 
-command_array_1 = 'right_eye|close|10|3->left_eye|close|10|3->right_eye|close|10|3'
+command_array_1 = 'right_eye|close|20|15->left_eye|close|20|15->right_eye|close|20|15'
 command_array_2 = 'both_eyebrows|up|10|3->both_eyebrows|up|10|3->both_eyebrows|up|10|3'
 command_array_3 = 'lips_vertical|open|10|3->lips_horizontal|open|10|3->lips_wide|open|10|3'
 command_array_4 = 'both_eyebrows|up|10|3->right_eye|close|10|3->lips_wide|open|10|3'
-command_array_5 = 'lips_vertical|open|10|3->lips_vertical|open|10|30'
+command_array_5 = 'lips_vertical|open|10|3->lips_vertical|open|10|50'
 command_array_6 = 'right_eye|close|10|3->right_eye|close|10|3->right_eye|close|10|3'
 command_array_7 = 'lips_vertical|open|10|3->lips_vertical|open|10|3->lips_vertical|open|10|3'
 
@@ -59,10 +59,7 @@ custom_gesture_array = [
     CustomGesture('Dragging mode: Lift both eyebrows, right eye, lips wide', command_array_4),
     CustomGesture('Left click: Say ahh X2', command_array_5),
     CustomGesture('Close window: Right wink X3', command_array_6),
-    CustomGesture('Left click and hold: Say ahh X3', command_array_7)
-]
-
-default_gesture_array = [
+    CustomGesture('Left click and hold: Say ahh X3', command_array_7),
     CustomGesture('Reset all gestures: close both eyes for 2 sec', default_command_array_1),
     CustomGesture('Right Click: Rise both eyebrows for 2 sec', default_command_array_2),
     CustomGesture('Double Click: Rise both eyebrows for 2 sec X2 ', default_command_array_3)
@@ -345,22 +342,22 @@ with mp_face_mesh.FaceMesh(
         lm = reformat_landmarks(face_landmarks)
         results_facial_exp = global_extractor(lm)
         flags = [custom_gesture(results_facial_exp) for custom_gesture in custom_gesture_array]
-        default_flags = [default_gesture(results_facial_exp) for default_gesture in default_gesture_array]
+        # default_flags = [default_gesture(results_facial_exp) for default_gesture in default_gesture_array]
 
         # print(custom_gesture)
         # print(custom_gesture_array[0])
         # print(results_facial_exp['lips'])
-        for flag, default_gesture in zip(default_flags, default_gesture_array):
-            if flag:
-                print_string = default_gesture.proclaim_detection()
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.rectangle(image, (int(WIDTH * 0.05), int(HEIGHT * 0.8)), (int(WIDTH * 0.9), int(HEIGHT * 0.98)),
-                              _WHITE, -1)
-                cv2.putText(image, print_string, (int(WIDTH * 0.05), int(HEIGHT * 0.9)), font, 0.7, _RED, 2,
-                            cv2.LINE_AA)
-                # reset everything else
-                [c.reset_state() for c in custom_gesture_array]
-                [c.reset_state() for c in default_gesture_array]
+        # for flag, default_gesture in zip(default_flags, default_gesture_array):
+        #     if flag:
+        #         print_string = default_gesture.proclaim_detection()
+        #         font = cv2.FONT_HERSHEY_SIMPLEX
+        #         cv2.rectangle(image, (int(WIDTH * 0.05), int(HEIGHT * 0.8)), (int(WIDTH * 0.9), int(HEIGHT * 0.98)),
+        #                       _WHITE, -1)
+        #         cv2.putText(image, print_string, (int(WIDTH * 0.05), int(HEIGHT * 0.9)), font, 0.7, _RED, 2,
+        #                     cv2.LINE_AA)
+        #         # reset everything else
+        #         [c.reset_state() for c in custom_gesture_array]
+        #         [c.reset_state() for c in default_gesture_array]
 
         for flag, custom_gesture in zip(flags, custom_gesture_array):
             if flag:

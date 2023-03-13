@@ -6,7 +6,7 @@ Here a list of gestures and the rules for classifying:
 
 '''
 from typing import List
-
+from collections import defaultdict
 from utils.constants import important_keypoints, left_eye_keypoints, right_eye_keypoints, LEFT_EYE, RIGHT_EYE
 import math
 import numpy as np
@@ -33,7 +33,7 @@ class RaiseEyebrows():
         self.left_eyebrow_corner_ind = 285
         self.right_eyebrow_corner_ind = 55
 
-    def __call__(self, landmarks):
+    def __call__(self, landmarks) -> dict:
         landmarks = np.array([L['results'] for L in landmarks])
 
         # Right eyes
@@ -65,7 +65,7 @@ class RaiseEyebrows():
         re_ratio = rh_distance / rv_distance
         le_ratio = lh_distance / lv_distance
 
-        return -re_ratio, -le_ratio
+        return dict(right_eyebrow=-re_ratio, left_eyebrow=-le_ratio)
 
 
 class GesturePlaceHolder(BaseRuleGesture):
@@ -73,7 +73,8 @@ class GesturePlaceHolder(BaseRuleGesture):
         super().__init__(th=0)
 
     def __call__(self, landmarks):
-        return [False, False]
+
+        return defaultdict(lambda: [-10, -10])
 
 
 class Blinking:
@@ -81,7 +82,7 @@ class Blinking:
         self.right_indices = right_indices
         self.left_indices = left_indices
 
-    def __call__(self, landmarks):
+    def __call__(self, landmarks) -> dict:
         landmarks = np.array([L['results'] for L in landmarks])
 
         # Right eyes
@@ -127,7 +128,6 @@ class OpenLips:
         self.forehead_ind = 9
         self.nose_ind = 4
 
-
     def __call__(self, landmarks):
         landmarks = np.array([L['results'] for L in landmarks])
 
@@ -148,7 +148,6 @@ class OpenLips:
         top_lip = landmarks[self.upper_lip_ind]
         bottom_lip = landmarks[self.lower_lip_ind]
 
-
         # Horizontal lips line
         left_lip_corner_ind = landmarks[self.left_lip_corner_ind]
         right_lip_corner_ind = landmarks[self.right_lip_corner_ind]
@@ -156,7 +155,7 @@ class OpenLips:
         # Mean horizontal eye reference
         rh_distance = euclaideanDistance(rh_right, rh_left)
         lh_distance = euclaideanDistance(lh_right, lh_left)
-        mean_eye_horizontal = (rh_distance+lh_distance)/2
+        mean_eye_horizontal = (rh_distance + lh_distance) / 2
 
         # Nose distance
         nose_distance = euclaideanDistance(top_nose, bottom_nose)
@@ -169,7 +168,6 @@ class OpenLips:
         vertical_ratio = v_lips_distance / nose_distance
 
         return horizontal_ratio, vertical_ratio
-
 
 
 class TrippelWink(BaseRuleGesture):
@@ -244,7 +242,7 @@ class TrippelWink(BaseRuleGesture):
             return False
 
 
-class SingleAction():
+class SingleActionTracker():
     def __init__(self, name: str, action: List[bool] = None, hold_period: int = 0, wait_period: int = 0) -> object:
 
         if action is None:
@@ -257,7 +255,7 @@ class SingleAction():
         self.wait_counter = 0
         self.hold_counter = 0
         self.grace_counter = 0
-        self.grace_period = 3
+        self.grace_period = 2
 
         self.flags = [False, False]
         self.state = False
@@ -337,14 +335,22 @@ class GlobalGestureExtractor:
         return results
 
 
-class CustomGesture():
-    def __init__(self, name, command_array: str, threshold_map: dict = None, reset_period=150):
+class CustomGesture:
+    def __init__(self, name, command_array: str, threshold_map: dict = None, reset_period: int = 150, wait_period=0):
+        '''
+        Create a custom gesture sequence from basic elements.
 
+        :param name: Name of gesture sequence
+        :param command_array: String array of commands
+        :param threshold_map: Thresholds for each command
+        :param reset_period: Number of frames to complete the sequence before resetting
+        '''
         self.threshold_map = dict()
         self.update_default_threshold_map(threshold_map)
         self.name = name
         self.reset_period = reset_period
         self.reset_counter = 0
+        self.command_array_text = command_array
 
         self.available_parts_dict = {
             'right_eye': {'open': [False, False], 'close': [True, False]},
@@ -371,16 +377,15 @@ class CustomGesture():
 
             'lips_vertical': 'lips',
             'lips_horizontal': 'lips',
-            'lips_wide':  'lips'}
+            'lips_wide': 'lips'}
 
         self.action_array = self.pars_command_array(command_array)
         self.default_reset_state_action_name = 'both_eyes'
         self.reset_state_action = self.get_default_reset_action()
         self.random_blink = self.get_random_blink()
         self.wait_counter = 0
-        self.wait_period = 100
+        self.wait_period = wait_period
         self.state = False
-
 
     def update_default_threshold_map(self, threshold_map):
         default_threshold_map = {
@@ -403,6 +408,10 @@ class CustomGesture():
         return
 
     def reset_state(self):
+        '''
+
+        :return:
+        '''
 
         if self.wait_counter > 0:  # If in waiting period, do not reset
             return
@@ -413,48 +422,56 @@ class CustomGesture():
         self.reset_counter = 0
         self.state = False
 
-    def pars_command_array(self, command_array):
+    def pars_command_array(self, command_array) -> List[SingleActionTracker]:
         '''
         The command array must have the following structure:
-        [action1]->[action2]->[action3]
+        [action1]->[action2]->[action3]...->[actionN]
         while each action is comprised of:
             <part><action><number of frames><number of frames at base before next action>
-        and the wait is the number of frames between each action
-        The available parts and actions are as follows, the base/default states are marked with an astrix:
-            left_eye: open*:False, close:True
-            right_eye: open*:False, close:True
-            left_eyebrow: up:True, down*:False
-            right_eyebrow: up:True, down*:False
-            lips: smile:-1, wide:1, close*:0
-        example:
-            right_eye|close|3|3->left_eye|close>|3|3->right_eye|close|3|3
 
-        :param command_array:
-        :return command function:
+        The available parts and actions are as follows, the base/default states are marked with an astrix:
+            left_eye: open*, close.
+            right_eye: open*, close.
+            both_eyes: open*, close.
+            left_eyebrow: down*, up.
+            right_eyebrow: down*:, up.
+            both_eyebrows: down*, up.
+            lips_vertical: close*, open.
+            lips_horizontal: close*, open.
+            lips_wide: close*, open.
+
+        example:
+            command array: 'right_eye|close|5|3->left_eye|close>|6|3->right_eye|close|4|8'
+            action1: close right eye, keep closed for 5 frames, open the right eye and keep open for 3 frames
+            action2: close left eye, keep closed for 6 frames, open the left eye and keep open for 3 frames
+            action3: close right eye, keep closed for 5 frames, open the right eye and keep open for 8 frames
+
+        :param command_array: a string of command
+        :return single_action_tracker_array: a list of SingleActionTracker objects
         '''
         all_commands = []
-        ret = []
+        single_action_tracker_array = []
         command_array = command_array.split('->')
         # assert len(command_array) == 3, 'Incorrect command array, the command array must contain 3 actions,' \
         #                                 ' separated by an "->" mark '
         for action in command_array:
             sub_actions = action.split('|')
             assert len(sub_actions) == 4, f'Incorrect action, the action must contain 4 parts,' \
-                                          f' but it only had {len(sub_actions)}'
+                                          f' but it only had {len(sub_actions)}, action: {action}'
             command_dict = {}
 
             assert sub_actions[0] in self.available_parts_dict.keys(), \
-                f'Part {sub_actions[0]} is invalid, it must be one of {self.available_parts_dict.keys()}'
+                f'Part {sub_actions[0]} is invalid, it must be one of {self.available_parts_dict.keys()}, action: {action}'
             command_dict['name'] = sub_actions[0]
 
             assert sub_actions[1] in self.available_parts_dict[sub_actions[0]].keys(), \
                 f'Action {sub_actions[1]} is invalid it must be one of {self.available_parts_dict[sub_actions[0]].keys()} '
             command_dict['action'] = self.available_parts_dict[sub_actions[0]][sub_actions[1]]
             assert sub_actions[2].isnumeric(), \
-                f'The hold period {sub_actions[2]} if invalid, it must be a numeric'
+                f'The hold period {sub_actions[2]} if invalid, it must be a numeric, action: {action}'
             command_dict['hold'] = int(sub_actions[2])
             assert sub_actions[3].isnumeric(), \
-                f'The hold period {sub_actions[3]} if invalid, it must be numeric'
+                f'The hold period {sub_actions[3]} if invalid, it must be numeric, action: {action}'
             command_dict['wait'] = int(sub_actions[3])
 
             command_dict['wait_counter'] = 0
@@ -463,39 +480,39 @@ class CustomGesture():
             all_commands.append(command_dict)
 
         for c in all_commands:
-            ret.append(SingleAction(name=c['name'],
-                                    action=c['action'],
-                                    hold_period=c['hold'],
-                                    wait_period=c['wait']))
-        return ret
+            single_action_tracker_array.append(SingleActionTracker(name=c['name'],
+                                                                   action=c['action'],
+                                                                   hold_period=c['hold'],
+                                                                   wait_period=c['wait']))
+        return single_action_tracker_array
 
     def get_default_reset_action(self):
         # close both eyes for 3 frames
-        reset_state = SingleAction(name=self.default_reset_state_action_name,
-                                   action=self.available_parts_dict['both_eyes']['close'],
-                                   hold_period=20,
-                                   wait_period=0)
+        reset_state = SingleActionTracker(name=self.default_reset_state_action_name,
+                                          action=self.available_parts_dict['both_eyes']['close'],
+                                          hold_period=20,
+                                          wait_period=0)
         return reset_state
 
     def get_random_blink(self):
         # close both eyes for 3 frames
-        reset_state = SingleAction(name=self.default_reset_state_action_name,
-                                   action=self.available_parts_dict['both_eyes']['close'],
-                                   hold_period=1,
-                                   wait_period=0)
+        reset_state = SingleActionTracker(name=self.default_reset_state_action_name,
+                                          action=self.available_parts_dict['both_eyes']['close'],
+                                          hold_period=1,
+                                          wait_period=0)
         return reset_state
-
 
     def get_all_states(self):
         return [s.state for s in self.action_array]
 
-    def call_action(self, results, action_obj: SingleAction):
+    def call_action(self, results, action_obj: SingleActionTracker):
         action_name = self.action_translation[action_obj.name]
         res = results[action_name]
         if len(res) == 1:
             res = [res]
 
-        assert(len(self.threshold_map[action_obj.name])) == len(res),'The length of the results and the length of the thresholds must match'
+        assert (len(self.threshold_map[action_obj.name])) == len(
+            res), 'The length of the results and the length of the thresholds must match'
         res = np.array(res) > np.array(self.threshold_map[action_obj.name])
 
         # if res[1]:

@@ -52,3 +52,14 @@ test_files_dict = {'category1': [114, 124, 125, 126, 150, 158, 401, 402, 505, 50
                    'category3': [410, 411, 516, 517, 526, 528, 529, 530, 531, 533, 557, 558, 559, 562]}
 
 all_test_files = [item for sub in [v for v in test_files_dict.values()] for item in sub]
+
+COLORS = dict(
+    RED=(48, 48, 255),
+    GREEN=(48, 255, 48),
+    BLUE=(192, 101, 21),
+    YELLOW=(0, 204, 255),
+    GRAY=(128, 128, 128),
+    PURPLE=(128, 64, 128),
+    PEACH=(180, 229, 255),
+    WHITE=(224, 224, 224)
+)
