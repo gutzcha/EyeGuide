@@ -246,13 +246,11 @@ class FacialWriting(ReadGestures):
                 # debug
                 # print(print_string)
                 if print_string == 'back':
-                    if len(self.current_string)>0:
+                    if len(self.current_string) > 0:
                         self.current_string = self.current_string[:-1]
                 else:
-                    self.current_string = self.current_string+print_string
+                    self.current_string = self.current_string + print_string
                 self.reset_all(flags)
-
-
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.rectangle(image, (int(width * 0.05), int(height * 0.8)),
@@ -261,8 +259,6 @@ class FacialWriting(ReadGestures):
         cv2.putText(image, self.current_string, (int(width * 0.05), int(height * 0.9)), font, 0.7,
                     COLORS['RED'], 2,
                     cv2.LINE_AA)
-
-
 
         return
 
@@ -280,7 +276,7 @@ class FacialWriting(ReadGestures):
 
 
 if __name__ == '__main__':
-    command_array_1 = 'right_eye|close|20|15->left_eye|close|20|15->right_eye|close|20|15'
+    command_array_1 = 'right_eye|close|10|3&both_eyebrows|up|10|3->left_eye|close|10|3'
     command_array_2 = 'both_eyebrows|up|10|3->both_eyebrows|up|10|3->both_eyebrows|up|10|3'
     command_array_3 = 'lips_vertical|open|10|3->lips_horizontal|open|10|3->lips_wide|open|10|3'
     command_array_4 = 'both_eyebrows|up|10|3->right_eye|close|10|3->lips_wide|open|10|3'
@@ -289,11 +285,11 @@ if __name__ == '__main__':
     command_array_7 = 'lips_vertical|open|10|3->lips_vertical|open|10|3->lips_vertical|open|10|3'
 
     default_command_array_1 = 'both_eyes|close|30|3'
-    default_command_array_2 = 'both_eyebrows|up|20|30'
+    default_command_array_2 = 'both_eyebrows|up|20|60'
     default_command_array_3 = 'both_eyebrows|up|20|3->both_eyebrows|up|20|30'
 
     custom_gesture_array = [
-        CustomGesture('Take a screenshot: Wink right, left right', command_array_1, wait_period=100),
+        CustomGesture('Take a screenshot: Wink right + both eyebrows, left', command_array_1, wait_period=100),
         CustomGesture('Left click and hold: Lift both eyebrowsX3', command_array_2, wait_period=100),
         CustomGesture('Zoom in/out mode: Smile, say ahh, lips wide', command_array_3, wait_period=100),
         CustomGesture('Dragging mode: Lift both eyebrows, right eye, lips wide', command_array_4, wait_period=100),
@@ -309,4 +305,3 @@ if __name__ == '__main__':
 
     # facial_writing = FacialWriting()
     # facial_writing.run()
-
