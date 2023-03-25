@@ -237,7 +237,6 @@ class FacialWriting(ReadGestures):
         super(FacialWriting, self).__init__(get_gesture_array)
         self.caps_on = False
 
-
     def change_caps_lock(self):
         self.caps_on = not self.caps_on
 
@@ -267,6 +266,10 @@ class FacialWriting(ReadGestures):
         cv2.putText(image, self.current_string, (int(width * 0.05), int(height * 0.9)), font, 0.7,
                     COLORS['RED'], 2,
                     cv2.LINE_AA)
+        if self.caps_on:
+            cv2.putText(image, 'Caps Lock On', (int(width * 0.05), int(height * 0.85)), font, 0.7,
+                        COLORS['BLUE'], 1,
+                        cv2.LINE_AA)
 
         return
 
@@ -314,8 +317,6 @@ if __name__ == '__main__':
     ]
     facial_writing = FacialWriting()
     facial_writing.run()
-    
+
     read_gesture = ReadGestures(custom_gesture_array)
     read_gesture.run()
-
-
