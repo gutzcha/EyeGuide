@@ -267,30 +267,31 @@ class FacialWriting(ReadGestures):
     def get_gesture_array(self):
         gesture_letter_array = [
 
-            CustomGesture('A', 'right_eye|close|5|3->right_eye|close|5|15', reset_period=120),
-            CustomGesture('B', 'right_eye|close|5|3->left_eye|close|5|15', reset_period=120),
-            CustomGesture('C', 'both_eyebrows|up|5|3->both_eyebrows|up|5|15', reset_period=120),
-            CustomGesture('D', 'lips_vertical|open|10|3->lips_vertical|open|10|15', reset_period=120),
-            CustomGesture('E', 'lips_vertical|open|10|3->lips_horizontal|open|10|15', reset_period=120),
-            CustomGesture('F', 'lips_horizontal|open|10|3->lips_horizontal|open|10|15', reset_period=120),
-            CustomGesture('back', 'both_eyes|close|10|3', reset_period=120)
+            CustomGesture('A', 'right_eye:close&both_eyebrows:up|5|3->right_eye:close|5|15', reset_period=120),
+            CustomGesture('B', 'right_eye:close|5|3->left_eye:close|5|15', reset_period=120),
+            CustomGesture('C', 'both_eyebrows:up|5|3->both_eyebrows:up|5|15', reset_period=120),
+            CustomGesture('D', 'lips_vertical:open|10|3->lips_vertical:open|10|15', reset_period=120),
+            CustomGesture('E', 'lips_vertical:open|10|3->lips_horizontal:open|10|15', reset_period=120),
+            CustomGesture('F', 'lips_horizontal:open|10|3->lips_horizontal:open|10|15', reset_period=120),
+
+            CustomGesture('back', 'both_eyes:close|10|3', reset_period=120)
 
         ]
         return gesture_letter_array
 
 
 if __name__ == '__main__':
-    command_array_1 = 'right_eye|close|10|3&both_eyebrows|up|10|3->left_eye|close|10|3'
-    command_array_2 = 'both_eyebrows|up|10|3->both_eyebrows|up|10|3->both_eyebrows|up|10|3'
-    command_array_3 = 'lips_vertical|open|10|3->lips_horizontal|open|10|3->lips_wide|open|10|3'
-    command_array_4 = 'both_eyebrows|up|10|3->right_eye|close|10|3->lips_wide|open|10|3'
-    command_array_5 = 'lips_vertical|open|10|3->lips_vertical|open|10|50'
-    command_array_6 = 'right_eye|close|10|3->right_eye|close|10|3->right_eye|close|10|3'
-    command_array_7 = 'lips_vertical|open|10|3->lips_vertical|open|10|3->lips_vertical|open|10|3'
+    command_array_1 = 'right_eye:close&both_eyebrows:up|10|3->left_eye:close|10|3'
+    command_array_2 = 'both_eyebrows:up|10|3->both_eyebrows:up|10|3->both_eyebrows:up|10|3'
+    command_array_3 = 'lips_vertical:open|10|3->lips_horizontal:open|10|3->lips_wide:open|10|3'
+    command_array_4 = 'both_eyebrows:up|10|3->right_eye:close|10|3->lips_wide:open|10|3'
+    command_array_5 = 'lips_vertical:open|10|3->lips_vertical:open|10|50'
+    command_array_6 = 'right_eye:close|10|3->right_eye:close|10|3->right_eye:close|10|3'
+    command_array_7 = 'lips_vertical:open|10|3->lips_vertical:open|10|3->lips_vertical:open|10|3'
 
-    default_command_array_1 = 'both_eyes|close|30|3'
-    default_command_array_2 = 'both_eyebrows|up|20|60'
-    default_command_array_3 = 'both_eyebrows|up|20|3->both_eyebrows|up|20|30'
+    default_command_array_1 = 'both_eyes:close|30|3'
+    default_command_array_2 = 'both_eyebrows:up|20|60'
+    default_command_array_3 = 'both_eyebrows:up|20|3->both_eyebrows:up|20|30'
 
     custom_gesture_array = [
         CustomGesture('Take a screenshot: Wink right + both eyebrows, left', command_array_1, wait_period=100),
@@ -304,8 +305,10 @@ if __name__ == '__main__':
         CustomGesture('Right Click: Rise both eyebrows for 2 sec', default_command_array_2, wait_period=100),
         CustomGesture('Double Click: Rise both eyebrows for 2 sec X2 ', default_command_array_3, wait_period=100)
     ]
-    # read_gesture = ReadGestures(custom_gesture_array)
-    # read_gesture.run()
+    # facial_writing = FacialWriting()
+    # facial_writing.run()
+    
+    read_gesture = ReadGestures(custom_gesture_array)
+    read_gesture.run()
 
-    facial_writing = FacialWriting()
-    facial_writing.run()
+

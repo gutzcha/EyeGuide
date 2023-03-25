@@ -170,7 +170,7 @@ class OpenLips:
 
 
 class SingleActionTracker():
-    def __init__(self, name: str, action: List[bool] = None, hold_period: int = 0, wait_period: int = 0):
+    def __init__(self, name: list[str], action: List[List[bool]] = None, hold_period: int = 0, wait_period: int = 0):
 
         if action is None:
             action = [False, False]
@@ -351,21 +351,42 @@ class CustomGesture:
         if self.wait_counter > 0:  # If in waiting period, do not reset
             return
 
-        for action_object_list in self.action_array:
-            for action_object in action_object_list:
-                action_object.reset_state()
+        for action_object in self.action_array:
+            action_object.reset_state()
 
         self.reset_counter = 0
         self.state = False
 
-    def pars_command_array(self, command_array) -> List[List[SingleActionTracker]]:
+    def pars_command_array(self, command_array) -> List[SingleActionTracker]:
         '''
-        The command array must have the following structure:
-        [action1_a]&[action1_b]->[action2_a]&[action2_b]->[action3]...->[actionN_a]&[actionN_b]&[actionN_c]
-        while each action is comprised of:
-            <part><action><number of frames><number of frames at base before next action>
+        A command array is a series of actions that represent a command.
+        An action is a basic or combination of basic facial gestures performed at the same time.
+        A facial gesture has four steps:
+            step 1. The motion of part of the face from default position to a different position
+            step 2. Holding the new position for a period of time (number of frames) - HOLD PERIOD
+            step 3. Returning to default position
+            step 4. Remaining at the default position for a period of time - WAIT PERIOD
 
-        The available parts and actions are as follows, the base/default states are marked with an astrix:
+        Example for a single action:
+            step 1. Lifting the right eyebrow and closing the left eye
+            step 2. Holding new position of both parts for a number of frames
+            step 3. Lowering the right eyebrow and opening the left eye
+            step 4. Keeping both parts at the default position for a number of frames
+
+        The command array must have the following structure:
+        [action1]->[action2]->[action3]...->[actionN]
+        The different actions are separated by an arrow (->)
+        while each action is comprised of:
+            <part1>:<action1>&<part2>:<action2>|<number of frames>|<number of frames at base before next action>
+
+        Each part (of the face) and motion are separated by colon (:),
+        it is possible to add multiple part-motion pairs for a single action, separated by an ampersand (&).
+
+        The first number following the (|) indicated the number of frames to hold the action
+        The second number following the (|) indicated the number of frames to wait after reverting to base (up->down)
+
+
+        The available parts and motions are as follows, the base/default states are marked with an astrix:
             left_eye: open*, close.
             right_eye: open*, close.
             both_eyes: open*, close.
@@ -377,10 +398,10 @@ class CustomGesture:
             lips_wide: close*, open.
 
         example:
-            command array: 'right_eye|close|10|3&both_eyebrows|up|10|3->left_eye|close|10|3->right_eye|close|15|8'
-            action1: close right eye, keep closed for 10 frames, open the right eye and keep open for 3 frames AND rise both eyebrows for 10 frames and lower for 3 frames
+            command array: 'right_eye:close&both_eyebrows:up|10|3->left_eye:close|10|3'
+            action1: close right eye and lift both eyebrows for 10 frames, open the right eye and lower both eyebrows for 3 frames
             action2: close left eye, keep closed for 10 frames, open the left eye and keep open for 3 frames
-            action3: close right eye, keep closed for 15 frames, open the right eye and keep open for 8 frames
+
 
         :param command_array: a string of command
         :return single_action_tracker_array: a list of SingleActionTracker objects
@@ -388,73 +409,59 @@ class CustomGesture:
         all_commands = []
         single_action_tracker_array = []
         command_array = command_array.split('->')
-        command_array = [c.split('&') for c in command_array]  # split each command into simultaneous commands
+        # command_array = [c.split('&') for c in command_array]  # split each command into simultaneous commands
 
-        # assert len(command_array) == 3, 'Incorrect command array, the command array must contain 3 actions,' \
-        #                                 ' separated by an "->" mark '
-        for action_list in command_array:
-            aim_action_list = []
-            for action in action_list:
-                sub_actions = action.split('|')
-                assert len(sub_actions) == 4, f'Incorrect action, the action must contain 4 parts,' \
-                                              f' but it only had {len(sub_actions)}, action: {action}'
-                command_dict = {}
-
-                assert sub_actions[0] in self.available_parts_dict.keys(), \
-                    f'Part {sub_actions[0]} is invalid, it must be one of {self.available_parts_dict.keys()}, action: {action}'
-                command_dict['name'] = sub_actions[0]
-
-                assert sub_actions[1] in self.available_parts_dict[sub_actions[0]].keys(), \
-                    f'Action {sub_actions[1]} is invalid it must be one of {self.available_parts_dict[sub_actions[0]].keys()} '
-                command_dict['action'] = self.available_parts_dict[sub_actions[0]][sub_actions[1]]
-                assert sub_actions[2].isnumeric(), \
-                    f'The hold period {sub_actions[2]} if invalid, it must be a numeric, action: {action}'
-                command_dict['hold'] = int(sub_actions[2])
-                assert sub_actions[3].isnumeric(), \
-                    f'The hold period {sub_actions[3]} if invalid, it must be numeric, action: {action}'
-                command_dict['wait'] = int(sub_actions[3])
-
-                command_dict['wait_counter'] = 0
-                command_dict['hold_counter'] = 0
-
-                aim_action_list.append(command_dict)
-            all_commands.append(aim_action_list)
-
-        for sim_commands in all_commands:
-            sim_action_tracker = []
-            for c in sim_commands:
-                sim_action_tracker.append(SingleActionTracker(name=c['name'],
-                                                              action=c['action'],
-                                                              hold_period=c['hold'],
-                                                              wait_period=c['wait']))
-            single_action_tracker_array.append(sim_action_tracker)
+        for action in command_array:
+            single_action_tracker_array.append(self.generate_single_action_tracker(action))
         return single_action_tracker_array
+
+    def generate_single_action_tracker(self, action):
+        sub_actions = action.split('|')
+        assert len(sub_actions) == 3, f'Incorrect action, the action must contain 3 parts,' \
+                                      f' but it only had {len(sub_actions)}, action: {action}'
+
+        parts_actions_all = sub_actions[0]  # face part and gesture
+        names = []
+        flags = []
+        parts_actions_list = parts_actions_all.split('&')
+        for single_part_action in parts_actions_list:
+            single_part_action_split = single_part_action.split(':')
+            assert len(single_part_action_split) == 2, f'Bad format, this must be a facial part:gesture,' \
+                                                       f' but it was {single_part_action} instead'
+            face_part = single_part_action_split[0]
+            face_gesture = single_part_action_split[1]
+            flags.append(self.available_parts_dict[face_part][face_gesture])
+            names.append(face_part)
+        hold_period = sub_actions[1]
+        wait_period = sub_actions[2]
+
+        assert hold_period.isnumeric(), f'hold period must be a positive integer, but is was {hold_period}'
+        assert wait_period.isnumeric(), f'wait_period period must be a positive integer, but is was {wait_period}'
+
+        return SingleActionTracker(names, action=flags, hold_period=int(hold_period), wait_period=int(wait_period))
 
     def get_default_reset_action(self):
         # close both eyes for 3 frames
         if self.default_reset_state_action_name == 'none':
-            return SingleActionTracker(name='place holder')
+            return SingleActionTracker(name=['place holder'])
 
-        return SingleActionTracker(name=self.default_reset_state_action_name,
-                                   action=self.available_parts_dict['both_eyes']['close'],
+        return SingleActionTracker(name=[self.default_reset_state_action_name],
+                                   action=[self.available_parts_dict['both_eyes']['close']],
                                    hold_period=20,
                                    wait_period=0)
 
     def get_random_blink(self):
         # close both eyes for 3 frames
-        reset_state = SingleActionTracker(name=self.default_reset_state_action_name,
-                                          action=self.available_parts_dict['both_eyes']['close'],
+        reset_state = SingleActionTracker(name=[self.default_reset_state_action_name],
+                                          action=[self.available_parts_dict['both_eyes']['close']],
                                           hold_period=1,
                                           wait_period=0)
         return reset_state
 
     def get_all_states(self):
         ret_list = []
-        for sim_s in self.action_array:
-            s_list = []
-            for s in sim_s:
-                s_list.append(s.state)
-            ret_list.append(np.all(s_list))
+        for action in self.action_array:
+            ret_list.append(np.all(action.state))
         return ret_list
 
     def call_sim_action(self, results, action_obj_array: list[SingleActionTracker]):
@@ -471,16 +478,12 @@ class CustomGesture:
         res = np.array(res) > np.array(self.threshold_map[action_name])
         return np.all(res)
 
-
     def call_action(self, results, action_obj: SingleActionTracker):
-        action_name = self.action_translation[action_obj.name]
-        res = results[action_name]
-        if len(res) == 1:
-            res = [res]
-
-        assert (len(self.threshold_map[action_obj.name])) == len(
-            res), 'The length of the results and the length of the thresholds must match'
-        res = np.array(res) > np.array(self.threshold_map[action_obj.name])
+        res = []
+        for action_name in action_obj.name:
+            res_temp = results[self.action_translation[action_name]]
+            th_temp = self.threshold_map[action_name]
+            res.append(np.array(res_temp) > np.array(th_temp))
 
         # if res[1]:
         #     a = 1
@@ -522,7 +525,8 @@ class CustomGesture:
         for action, states in zip(self.action_array, all_states):
             # check if the first action flag
             if not states:
-                ret = self.call_sim_action(results, action)
+                ret = self.call_action(results, action)
+                # ret = self.call_sim_action(results, action)
                 if not ret:
                     break
             else:
