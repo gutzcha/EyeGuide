@@ -271,12 +271,12 @@ class GlobalGestureExtractor:
 class CustomGesture:
     def __init__(self, name, command_array: str, threshold_map: dict = None, reset_period: int = 150, wait_period=0):
         '''
-        Create a custom gesture sequence from basic elements.
 
-        :param name: Name of gesture sequence
+        :param name: A descriptive name of gesture sequence
         :param command_array: String array of commands
         :param threshold_map: Thresholds for each command
         :param reset_period: Number of frames to complete the sequence before resetting
+        :param wait_period: Number of frames to prevent reset and block other command after a changing state to True
         '''
         self.threshold_map = dict()
         self.update_default_threshold_map(threshold_map)
@@ -491,9 +491,9 @@ class CustomGesture:
 
     def __call__(self, results):
         '''
-
+        Update the single action trackers and check if all the tracker conditions are met.
         :param lm: land mark array
-        :return flag:
+        :return flag: If all actions in the action array were performed, if not, then return false
         '''
         if self.wait_counter > 0:
             self.wait_counter -= 1
