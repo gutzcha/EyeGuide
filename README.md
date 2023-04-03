@@ -1,7 +1,9 @@
 # Introduction
 Gaze tracking and gesture recognition technologies have made significant advancements in recent years, with applications ranging from virtual and augmented reality, gaming, and human-computer interaction. This project aims to develop an application that leverages these technologies to allow users to interact with their devices using their gaze and gestures alone.
 
-![logo (2)](https://user-images.githubusercontent.com/35958758/218949409-b82f0f3e-54de-4804-a9ff-f40fa4a4a141.png) ![ezgif-4-6f23d675dc](https://user-images.githubusercontent.com/35958758/229591335-1dcce471-0b73-4328-b62b-cdb4ce568703.gif)
+![logo (2)](https://user-images.githubusercontent.com/35958758/218949409-b82f0f3e-54de-4804-a9ff-f40fa4a4a141.png) 
+
+![ezgif-4-6f23d675dc](https://user-images.githubusercontent.com/35958758/229591335-1dcce471-0b73-4328-b62b-cdb4ce568703.gif)
 
 
 
