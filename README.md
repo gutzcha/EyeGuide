@@ -28,7 +28,7 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    * Implement a trigger gesture to activate the gesture recognition module.
    * Consider adding a gesture-recording module in the future to support custom gestures using few-shot learning methods.
    
-![ezgif-4-b2d3fc074b](https://user-images.githubusercontent.com/35958758/229589682-10b031e9-0b52-44cd-864b-00b35361988f.gif)
+![ezgif-4-b2d3fc074b](https://user-images.githubusercontent.com/35958758/229589682-10b031e9-0b52-44cd-864b-00b35361988f.gif) 
 
 ## App Development:
 
