@@ -31,7 +31,8 @@ The gaze tracking module will be implemented using a temporal dilated convolutio
    
 ![ezgif-4-b2d3fc074b](https://user-images.githubusercontent.com/35958758/229589682-10b031e9-0b52-44cd-864b-00b35361988f.gif) 
 
-![ezgif-4-b2d3fc074b](https://user-images.githubusercontent.com/35958758/229590866-237008a7-e155-45c2-a915-a6390f303f59.gif)
+![ezgif-4-6f23d675dc](https://user-images.githubusercontent.com/35958758/229591453-78e99d89-bee4-4338-b640-f83acaf05cbf.gif)
+
 
 ## App Development:
 
