@@ -3,9 +3,6 @@ Gaze tracking and gesture recognition technologies have made significant advance
 
 ![logo (2)](https://user-images.githubusercontent.com/35958758/218949409-b82f0f3e-54de-4804-a9ff-f40fa4a4a141.png) 
 
-![ezgif-4-6f23d675dc](https://user-images.githubusercontent.com/35958758/229591335-1dcce471-0b73-4328-b62b-cdb4ce568703.gif)
-
-
 
 # Problem Statement
 Traditional input methods like keyboards, mice, and touchscreens have proven to be effective in daily use, but they may become challenging or even inaccessible in hands-free environments such as virtual and augmented reality. Additionally, not all users, including those with physical disabilities, can effectively use these traditional methods. As a result, there is a pressing need for alternative forms of interaction that are more intuitive, user-friendly, and accessible to a wider range of users, including those with disabilities and those looking for more convenient methods of input in immersive environments.
