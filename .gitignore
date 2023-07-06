@@ -120,3 +120,6 @@ ___*
 assets/
 data/
 models/*
+/cache/
+/cache/
+/project/checkpoints/

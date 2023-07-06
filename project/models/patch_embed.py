@@ -5,7 +5,7 @@ I added options to change number of out frames, and out dim
 #
 import torch
 import torch.nn as nn
-
+from utils.constants import TRAINED_LANDMARKS
 
 class TemporalModelBase(nn.Module):
     """
@@ -30,7 +30,11 @@ class TemporalModelBase(nn.Module):
 
         self.pad = [filter_widths[0] // 2]
         self.expand_bn = nn.BatchNorm1d(channels, momentum=0.1)
-        self.shrink = nn.Conv1d(channels, num_joints_out * out_dim, 1)
+
+        shrink_out = num_joints_out * out_dim
+        # shrink_out = 128
+
+        self.shrink = nn.Conv1d(channels,shrink_out , 1)
         # self.conv_out = nn.Conv2d(channels, )
 
     def set_bn_momentum(self, momentum):
@@ -167,8 +171,11 @@ class TemporalModelOptimized1f(TemporalModelBase):
         """
         super().__init__(num_joints_in, in_features, num_joints_out, filter_widths, causal, dropout, channels, out_dim)
 
-        self.expand_conv = nn.Conv1d(num_joints_in * in_features, channels, filter_widths[0], stride=filter_widths[0],
+        self.expand_conv = nn.Conv1d(num_joints_in * in_features, channels, filter_widths[0],
                                      bias=False)
+
+        # self.expand_conv = nn.Conv1d(num_joints_in * in_features, channels, filter_widths[0], stride=filter_widths[0],
+        #                              bias=False)
 
         layers_conv = []
         layers_bn = []
@@ -201,10 +208,8 @@ class TemporalModelOptimized1f(TemporalModelBase):
         return x
 
 
-
-
 class PatchEmbed(nn.Module):
-    def __init__(self, img_size, in_chans, embed_dim, channels=64, filter_widths=None):
+    def __init__(self, img_size, in_chans, embed_dim, channels=64, filter_widths=None, dense=False):
         super().__init__()
         self.img_size = img_size
 
@@ -217,20 +222,30 @@ class PatchEmbed(nn.Module):
             self.filter_widths = filter_widths
 
         self.n_frames, self.n_landmarks = img_size
+        if dense:
+            self.tdcnn_model = TemporalModel(self.n_landmarks, in_features=self.in_chans,
+                                             num_joints_out=self.n_landmarks,
+                                             filter_widths=self.filter_widths, causal=False, dropout=0.25,
+                                             channels=self.embed_channles,
+                                             out_dim=self.embed_dim, dense=True)
 
-        self.tdcnn_model = TemporalModelOptimized1f(self.n_landmarks, in_features=self.in_chans,
-                                                    num_joints_out=self.n_landmarks,
-                                                    filter_widths=self.filter_widths, causal=False, dropout=0.25,
-                                                    channels=self.embed_channles,
-                                                    out_dim=self.embed_dim)
+        else:
+            self.tdcnn_model = TemporalModelOptimized1f(self.n_landmarks, in_features=self.in_chans,
+                                                        num_joints_out=self.n_landmarks,
+                                                        filter_widths=self.filter_widths, causal=False, dropout=0.25,
+                                                        channels=self.embed_channles,
+                                                        out_dim=self.embed_dim)
 
     def forward(self, x):
         return self.tdcnn_model(x)
 
 
 if __name__ == '__main__':
-    n_frames = 32 * 2
-    n_landmarks = 478
+    # n_frames = 32 * 2
+
+    n_frames = 32
+    # n_landmarks = 478
+    n_landmarks = len(TRAINED_LANDMARKS)
     dims = 2
     test_input = torch.rand(1, n_frames, n_landmarks, dims)
     filter_widths = [3, 3, 3]
@@ -242,11 +257,11 @@ if __name__ == '__main__':
     #              filter_widths=filter_widths, causal=False, dropout=0.25, channels=channels, dense=False,
     #                       out_dim=out_dim)
 
-    model = TemporalModelOptimized1f(num_joints_in=n_landmarks, in_features=2, num_joints_out=n_landmarks,
-                                     filter_widths=filter_widths, causal=False, dropout=0.25, channels=channels,
-                                     out_dim=out_dim)
+    # model = TemporalModelOptimized1f(num_joints_in=n_landmarks, in_features=2, num_joints_out=n_landmarks,
+    #                                  filter_widths=filter_widths, causal=False, dropout=0.25, channels=channels,
+    #                                  out_dim=out_dim)
 
-    ret = model(test_input)
+    # ret = model(test_input)
     # print(ret.shape)
     # print(ret)
 
@@ -254,7 +269,7 @@ if __name__ == '__main__':
     img_size = (n_frames, n_landmarks)
     in_chans = dims
     embed_dim = out_dim
-    model = PatchEmbed(img_size, in_chans, embed_dim, channels=128, filter_widths=[3, 3, 3])
+    model = PatchEmbed(img_size, in_chans, embed_dim, channels=128, filter_widths=[3, 3, 3], dense=True)
     x = model(test_input)
     print(test_input.shape)
     print(x.shape)

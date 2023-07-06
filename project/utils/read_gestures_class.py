@@ -283,7 +283,7 @@ class FacialWriting(ReadGestures):
             CustomGesture('E', 'lips_vertical:open|10|3->lips_horizontal:open|10|15', reset_period=120),
             CustomGesture('F', 'lips_horizontal:open|10|3->lips_horizontal:open|10|15', reset_period=120),
 
-            CustomGesture('capslock', 'both_eyebrows:up|10|3', reset_period=120),
+            CustomGesture('capslock', 'both_eyebrows:up|30|3', reset_period=120),
             CustomGesture('back', 'both_eyes:close|10|3', reset_period=120)
 
         ]
@@ -294,7 +294,7 @@ if __name__ == '__main__':
     command_array_1 = 'right_eye:close&both_eyebrows:up|10|3->left_eye:close|10|3'
     command_array_2 = 'both_eyebrows:up|10|3->both_eyebrows:up|10|3->both_eyebrows:up|10|3'
     command_array_3 = 'lips_vertical:open|10|3->lips_horizontal:open|10|3->lips_wide:open|10|3'
-    command_array_4 = 'both_eyebrows:up|10|3->right_eye:close|10|3->lips_wide:open|10|3'
+    # command_array_4 = 'q:up|10|3->right_eye:close|10|3->lips_wide:open|10|3'
     command_array_5 = 'lips_vertical:open|10|3->lips_vertical:open|10|50'
     command_array_6 = 'right_eye:close|10|3->right_eye:close|10|3->right_eye:close|10|3'
     command_array_7 = 'lips_vertical:open|10|3->lips_vertical:open|10|3->lips_vertical:open|10|3'
@@ -307,7 +307,7 @@ if __name__ == '__main__':
         CustomGesture('Take a screenshot: Wink right + both eyebrows, left', command_array_1, wait_period=100),
         CustomGesture('Left click and hold: Lift both eyebrowsX3', command_array_2, wait_period=100),
         CustomGesture('Zoom in/out mode: Smile, say ahh, lips wide', command_array_3, wait_period=100),
-        CustomGesture('Dragging mode: Lift both eyebrows, right eye, lips wide', command_array_4, wait_period=100),
+        # CustomGesture('Dragging mode: Lift both eyebrows, right eye, lips wide', command_array_4, wait_period=100),
         CustomGesture('Left click: Say ahh X2', command_array_5, wait_period=100),
         CustomGesture('Close window: Right wink X3', command_array_6, wait_period=100),
         CustomGesture('Left click and hold: Say ahh X3', command_array_7, wait_period=100),
@@ -318,5 +318,5 @@ if __name__ == '__main__':
     facial_writing = FacialWriting()
     facial_writing.run()
 
-    read_gesture = ReadGestures(custom_gesture_array)
-    read_gesture.run()
+    # read_gesture = ReadGestures(custom_gesture_array)
+    # read_gesture.run()
